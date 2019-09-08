@@ -48,7 +48,7 @@
     nf_flstar = s_star*(sl*ul[${i}] - nf_fl) * rcp_lstar;
     nf_frstar = s_star*(sr*ur[${i}] - nf_fr) * rcp_rstar;
 % else:
-    d_star = ${'s_star' if i == nvars - 1 else 'n[{0}]'.format(i - 1)};
+    d_star = ${'s_star' if i == nvars - 3 else 'n[{0}]'.format(i - 1)};
     nf_flstar = (s_star*(sl*ul[${i}] - nf_fl) +
                  sl*(pl + ul[0]*(sl - nvl)*(s_star - nvl))*d_star) *
                 rcp_lstar;

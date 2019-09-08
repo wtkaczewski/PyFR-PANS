@@ -6,48 +6,55 @@ from pyfr.solvers.baseadvec import BaseAdvectionElements
 class BaseFluidElements(object):
     formulations = ['std', 'dual']
 
-    privarmap = {2: ['rho', 'u', 'v', 'p'],
-                 3: ['rho', 'u', 'v', 'w', 'p']}
+    privarmap = {2: ['rho', 'u', 'v', 'p', 'ku', 'eu'],
+                 3: ['rho', 'u', 'v', 'w', 'p', 'ku', 'eu']}
 
-    convarmap = {2: ['rho', 'rhou', 'rhov', 'E'],
-                 3: ['rho', 'rhou', 'rhov', 'rhow', 'E']}
+    convarmap = {2: ['rho', 'rhou', 'rhov', 'E', 'ku', 'eu'],
+                 3: ['rho', 'rhou', 'rhov', 'rhow', 'E', 'ku', 'eu']}
 
     dualcoeffs = convarmap
 
     visvarmap = {
         2: [('density', ['rho']),
             ('velocity', ['u', 'v']),
-            ('pressure', ['p'])],
+            ('pressure', ['p']),
+            ('K_u', ['ku']),
+            ('Eps_u', ['eu'])],
         3: [('density', ['rho']),
             ('velocity', ['u', 'v', 'w']),
-            ('pressure', ['p'])]
+            ('pressure', ['p']),
+            ('K_u', ['ku']),
+            ('Eps_u', ['eu'])]
     }
+
 
     @staticmethod
     def pri_to_con(pris, cfg):
-        rho, p = pris[0], pris[-1]
+        rho, p = pris[0], pris[-3]
+        ku, eu = pris[-2], pris[-1]
 
         # Multiply velocity components by rho
-        rhovs = [rho*c for c in pris[1:-1]]
+        rhovs = [rho*c for c in pris[1:-3]]
 
         # Compute the energy
         gamma = cfg.getfloat('constants', 'gamma')
-        E = p/(gamma - 1) + 0.5*rho*sum(c*c for c in pris[1:-1])
+        E = p/(gamma - 1) + 0.5*rho*sum(c*c for c in pris[1:-3])
 
-        return [rho] + rhovs + [E]
+        return [rho] + rhovs + [E] + [ku,eu]
 
     @staticmethod
     def con_to_pri(cons, cfg):
-        rho, E = cons[0], cons[-1]
+        rho, E = cons[0], cons[-3]
+        ku, eu = cons[-2], cons[-1]
 
         # Divide momentum components by rho
-        vs = [rhov/rho for rhov in cons[1:-1]]
+        vs = [rhov/rho for rhov in cons[1:-3]]
 
         # Compute the pressure
         gamma = cfg.getfloat('constants', 'gamma')
         p = (gamma - 1)*(E - 0.5*rho*sum(v*v for v in vs))
+        return [rho] + vs + [p] + [ku,eu]
 
-        return [rho] + vs + [p]
 
 
 class EulerElements(BaseFluidElements, BaseAdvectionElements):

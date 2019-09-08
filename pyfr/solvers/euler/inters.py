@@ -50,10 +50,9 @@ class EulerBaseBCInters(BaseAdvectionBCInters):
                        c=self._tpl_c, bctype=self.type)
 
         self.kernels['comm_flux'] = lambda: self._be.kernel(
-            'bccflux', tplargs=tplargs, dims=[self.ninterfpts],
-            extrns=self._external_args, ul=self._scal_lhs,
+            'bccflux', tplargs, dims=[self.ninterfpts], ul=self._scal_lhs,
             magnl=self._mag_pnorm_lhs, nl=self._norm_pnorm_lhs,
-            **self._external_vals
+            ploc=self._ploc
         )
 
 
@@ -64,9 +63,10 @@ class EulerSupInflowBCInters(EulerBaseBCInters):
         super().__init__(be, lhs, elemap, cfgsect, cfg)
 
         tplc = self._exp_opts(
-            ['rho', 'p', 'u', 'v', 'w'][:self.ndims + 2], lhs
+            ['rho', 'p', 'u', 'v', 'w'][:self.ndims + 2] + ['ku','eu'], lhs
         )
         self._tpl_c.update(tplc)
+        
 
 
 class EulerCharRiemInvBCInters(EulerBaseBCInters):
@@ -76,7 +76,7 @@ class EulerCharRiemInvBCInters(EulerBaseBCInters):
         super().__init__(be, lhs, elemap, cfgsect, cfg)
 
         tplc = self._exp_opts(
-            ['rho', 'p', 'u', 'v', 'w'][:self.ndims + 2], lhs
+            ['rho', 'p', 'u', 'v', 'w'][:self.ndims + 2 ] + ['ku','eu'], lhs
         )
         self._tpl_c.update(tplc)
 

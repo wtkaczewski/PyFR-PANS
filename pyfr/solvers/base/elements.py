@@ -33,12 +33,13 @@ class BaseElements(object, metaclass=ABCMeta):
 
         # Determine the number of dynamical variables
         self.nvars = len(self.privarmap[ndims])
-
+        
         # Instantiate the basis class
         self.basis = basis = basiscls(nspts, cfg)
 
         # See what kind of projection the basis is using
         self.antialias = basis.antialias
+
 
         # If we need quadrature points or not
         haveqpts = 'flux' in self.antialias or 'div-flux' in self.antialias
@@ -124,6 +125,7 @@ class BaseElements(object, metaclass=ABCMeta):
 
         return [self.cfg.getexpr('solver-source-terms', v, '0', subs=subs)
                 for v in convars]
+
 
     @lazyprop
     def _ploc_in_src_exprs(self):

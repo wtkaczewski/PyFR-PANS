@@ -52,11 +52,11 @@
     // Compute the Eigenvectors
     r2a2 = 1/(2*a*a);
     v1[0] = (dp - roa*a*dvs)*r2a2;
-    v1[${nvars - 1}] = (dp - roa*a*dvs)*r2a2*(ha - a*vs);
+    v1[${nvars - 3}] = (dp - roa*a*dvs)*r2a2*(ha - a*vs);
     v2[0] = dro - dp*2*r2a2;
-    v2[${nvars - 1}] = (dro - dp*2*r2a2)*qq*0.5 + roa*(${pyfr.dot('va[{i}]', 'dv[{i}]', i=ndims)} - vs*dvs);
+    v2[${nvars - 3}] = (dro - dp*2*r2a2)*qq*0.5 + roa*(${pyfr.dot('va[{i}]', 'dv[{i}]', i=ndims)} - vs*dvs);
     v3[0] = (dp + roa*a*dvs)*r2a2;
-    v3[${nvars - 1}] = (dp + roa*a*dvs)*r2a2*(ha + a*vs);
+    v3[${nvars - 3}] = (dp + roa*a*dvs)*r2a2*(ha + a*vs);
 
 % for i in range(ndims):
     v1[${i + 1}] = (dp - roa*a*dvs)*r2a2*(va[${i}] - a*n[${i}]);

@@ -40,9 +40,9 @@ class BaseAdvectionElements(BaseElements):
 
         # Source term kernel arguments
         srctplargs = {
-            'ndims': self.ndims,
-            'nvars': self.nvars,
-            'srcex': self._src_exprs
+            'ndims':    self.ndims,
+            'nvars':    self.nvars,
+            'srcex':    self._src_exprs
         }
 
         # Interpolation from elemental points

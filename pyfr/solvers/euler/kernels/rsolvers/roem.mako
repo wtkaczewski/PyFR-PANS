@@ -66,14 +66,14 @@
     fpdtype_t g = f/(1.0 + abs_ma);
 
     // Difference of U, du
-%for i in range(nvars - 1):
+%for i in range(nvars - 3):
     du[${i}] = ur[${i}] - ul[${i}];
 %endfor
-    du[${nvars - 1}] = ur[0]*hr - ul[0]*hl;
+    du[${nvars - 3}] = ur[0]*hr - ul[0]*hl;
 
     // BdQ
     bdq[0] = drho - f*dp*rcp_aa*rcp_aa;
-    bdq[${nvars - 1}] = bdq[0]*ha + ra*dh;
+    bdq[${nvars - 3}] = bdq[0]*ha + ra*dh;
 % for i in range(ndims):
     bdq[${i + 1}] = bdq[0]*va[${i}] + ra*(dv[${i}] - n[${i}]*dcontra);
 % endfor

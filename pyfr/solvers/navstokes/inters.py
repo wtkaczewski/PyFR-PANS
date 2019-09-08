@@ -90,16 +90,14 @@ class NavierStokesBaseBCInters(BaseAdvectionDiffusionBCInters):
 
         self.kernels['con_u'] = lambda: be.kernel(
             'bcconu', tplargs=tplargs, dims=[self.ninterfpts],
-            extrns=self._external_args, ulin=self._scal_lhs,
-            ulout=self._vect_lhs, nlin=self._norm_pnorm_lhs,
-            **self._external_vals
+            ulin=self._scal_lhs, ulout=self._vect_lhs,
+            nlin=self._norm_pnorm_lhs, ploc=self._ploc
         )
         self.kernels['comm_flux'] = lambda: be.kernel(
             'bccflux', tplargs=tplargs, dims=[self.ninterfpts],
-            extrns=self._external_args, ul=self._scal_lhs,
-            gradul=self._vect_lhs, magnl=self._mag_pnorm_lhs,
-            nl=self._norm_pnorm_lhs, artviscl=self._artvisc_lhs,
-            **self._external_vals
+            ul=self._scal_lhs, gradul=self._vect_lhs,
+            magnl=self._mag_pnorm_lhs, nl=self._norm_pnorm_lhs,
+            ploc=self._ploc, artviscl=self._artvisc_lhs
         )
 
 
@@ -135,7 +133,7 @@ class NavierStokesCharRiemInvBCInters(NavierStokesBaseBCInters):
         super().__init__(be, lhs, elemap, cfgsect, cfg)
 
         tplc = self._exp_opts(
-            ['rho', 'p', 'u', 'v', 'w'][:self.ndims + 2], lhs
+            ['rho', 'p', 'u', 'v', 'w'][:self.ndims + 2] + ['ku','eu'], lhs
         )
         self._tpl_c.update(tplc)
 
@@ -148,7 +146,7 @@ class NavierStokesSupInflowBCInters(NavierStokesBaseBCInters):
         super().__init__(be, lhs, elemap, cfgsect, cfg)
 
         tplc = self._exp_opts(
-            ['rho', 'p', 'u', 'v', 'w'][:self.ndims + 2], lhs
+            ['rho', 'p', 'u', 'v', 'w'][:self.ndims + 2] + ['ku','eu'], lhs
         )
         self._tpl_c.update(tplc)
 
@@ -166,7 +164,7 @@ class NavierStokesSubInflowFrvBCInters(NavierStokesBaseBCInters):
         super().__init__(be, lhs, elemap, cfgsect, cfg)
 
         tplc = self._exp_opts(
-            ['rho', 'u', 'v', 'w'][:self.ndims + 1], lhs,
+            ['rho', 'u', 'v', 'w'][:self.ndims + 1] + ['ku','eu'], lhs,
             default={'u': 0, 'v': 0, 'w': 0}
         )
         self._tpl_c.update(tplc)
@@ -206,4 +204,4 @@ class NavierStokesSubOutflowBCInters(NavierStokesBaseBCInters):
     def __init__(self, be, lhs, elemap, cfgsect, cfg):
         super().__init__(be, lhs, elemap, cfgsect, cfg)
 
-        self._tpl_c.update(self._exp_opts(['p'], lhs))
+        self._tpl_c.update(self._exp_opts(['p'] + ['ku','eu'], lhs))

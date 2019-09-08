@@ -2,7 +2,7 @@
 <%namespace module='pyfr.backends.base.makoutil' name='pyfr'/>
 
 <%pyfr:macro name='inviscid_flux' params='s, f, p, v'>
-    fpdtype_t invrho = 1.0/s[0], E = s[${nvars - 1}];
+    fpdtype_t invrho = 1.0/s[0], E = s[${nvars - 3}];
 
     // Compute the velocities
     fpdtype_t rhov[${ndims}];
@@ -17,11 +17,18 @@
     // Density and energy fluxes
 % for i in range(ndims):
     f[${i}][0] = rhov[${i}];
-    f[${i}][${nvars - 1}] = (E + p)*v[${i}];
+    f[${i}][${nvars - 3}] = (E + p)*v[${i}];
 % endfor
 
     // Momentum fluxes
 % for i, j in pyfr.ndrange(ndims, ndims):
     f[${i}][${j + 1}] = rhov[${i}]*v[${j}]${' + p' if i == j else ''};
 % endfor
+
+    // Turbulence variable fluxes
+% for i in range(ndims):
+     f[${i}][${nvars-2}] = s[${nvars-2}]*v[${i}];
+     f[${i}][${nvars-1}] = s[${nvars-1}]*v[${i}];
+% endfor
+
 </%pyfr:macro>

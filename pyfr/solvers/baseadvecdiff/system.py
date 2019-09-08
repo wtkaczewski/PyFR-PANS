@@ -9,8 +9,6 @@ class BaseAdvectionDiffusionSystem(BaseAdvectionSystem):
         q1, q2 = self._queues
         kernels = self._kernels
 
-        self._bc_inters.prepare(t)
-
         self.eles_scal_upts_inb.active = uinbank
         self.eles_scal_upts_outb.active = foutbank
 
@@ -67,4 +65,9 @@ class BaseAdvectionDiffusionSystem(BaseAdvectionSystem):
             q1 << kernels['eles', 'divf_upts']()
         else:
             q1 << kernels['eles', 'negdivconf'](t=t)
+        runall([q1])
+
+
+        # TURBULENCE KERNELS
+        q1 << kernels['eles', 'negdivconfpans']()
         runall([q1])

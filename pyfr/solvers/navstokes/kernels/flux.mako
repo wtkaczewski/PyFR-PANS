@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 <%namespace module='pyfr.backends.base.makoutil' name='pyfr'/>
 
 % if ndims == 2:
@@ -30,20 +31,39 @@
     fpdtype_t mu_c = ${c['mu']};
 % endif
 
+    // Turbulence model variables and turbulent viscosity
+    fpdtype_t ku = max(uin[4], ${c['min_ku']});
+    fpdtype_t eu = max(uin[5], ${c['min_eu']});
+    fpdtype_t mu_t = ${c['Cmu']}*ku*ku/eu;
+
     // Compute temperature derivatives (c_v*dT/d[x,y])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x));
     fpdtype_t T_y = rcprho*(E_y - (rcprho*rho_y*E + u*u_y + v*v_y));
 
     // Negated stress tensor elements
-    fpdtype_t t_xx = -2*mu_c*rcprho*(u_x - ${1.0/3.0}*(u_x + v_y));
-    fpdtype_t t_yy = -2*mu_c*rcprho*(v_y - ${1.0/3.0}*(u_x + v_y));
-    fpdtype_t t_xy = -mu_c*rcprho*(v_x + u_y);
+    fpdtype_t t_xx = -2*(mu_c + mu_t)*rcprho*(u_x - ${1.0/3.0}*(u_x + v_y));
+    fpdtype_t t_yy = -2*(mu_c + mu_t)*rcprho*(v_y - ${1.0/3.0}*(u_x + v_y));
+    fpdtype_t t_xy = -(mu_c + mu_t)*rcprho*(v_x + u_y);
 
     fout[0][1] += t_xx;     fout[1][1] += t_xy;
     fout[0][2] += t_xy;     fout[1][2] += t_yy;
 
-    fout[0][3] += u*t_xx + v*t_xy + -mu_c*${c['gamma']/c['Pr']}*T_x;
-    fout[1][3] += u*t_xy + v*t_yy + -mu_c*${c['gamma']/c['Pr']}*T_y;
+    fout[0][3] += u*t_xx + v*t_xy + -(mu_c*${c['gamma']/c['Pr']} + mu_t*${c['gamma']/c['Pr_t']})*T_x;
+    fout[1][3] += u*t_xy + v*t_yy + -(mu_c*${c['gamma']/c['Pr']} + mu_t*${c['gamma']/c['Pr_t']})*T_y;
+
+    // Turbulence model gradients 
+    fpdtype_t ku_x = grad_uin[0][4];    fpdtype_t ku_y = grad_uin[1][4];
+    fpdtype_t eu_x = grad_uin[0][5];    fpdtype_t eu_y = grad_uin[1][5];
+
+    fpdtype_t sig_ku = ${c['sig_k']*c['fk']*c['fk']/c['fe']};
+    fpdtype_t sig_ke = ${c['sig_e']*c['fk']*c['fk']/c['fe']};
+
+    fout[0][4] = -rcprho*(mu_c + mu_t/sig_ku)*ku_x;     fout[1][4] = -rcprho*(mu_c + mu_t/sig_ku)*ku_y; 
+    fout[0][5] = -rcprho*(mu_c + mu_t/sig_ke)*eu_x;     fout[1][5] = -rcprho*(mu_c + mu_t/sig_ke)*eu_y; 
+
+
+
+
 </%pyfr:macro>
 % elif ndims == 3:
 <%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout'>
@@ -83,25 +103,40 @@
     fpdtype_t mu_c = ${c['mu']};
 % endif
 
+    fpdtype_t ku = max(uin[5], ${c['min_ku']});
+    fpdtype_t eu = max(uin[6], ${c['min_eu']});
+    fpdtype_t mu_t = ${c['Cmu']}*ku*ku/eu;
+
     // Compute temperature derivatives (c_v*dT/d[x,y,z])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x + w*w_x));
     fpdtype_t T_y = rcprho*(E_y - (rcprho*rho_y*E + u*u_y + v*v_y + w*w_y));
     fpdtype_t T_z = rcprho*(E_z - (rcprho*rho_z*E + u*u_z + v*v_z + w*w_z));
 
     // Negated stress tensor elements
-    fpdtype_t t_xx = -2*mu_c*rcprho*(u_x - ${1.0/3.0}*(u_x + v_y + w_z));
-    fpdtype_t t_yy = -2*mu_c*rcprho*(v_y - ${1.0/3.0}*(u_x + v_y + w_z));
-    fpdtype_t t_zz = -2*mu_c*rcprho*(w_z - ${1.0/3.0}*(u_x + v_y + w_z));
-    fpdtype_t t_xy = -mu_c*rcprho*(v_x + u_y);
-    fpdtype_t t_xz = -mu_c*rcprho*(u_z + w_x);
-    fpdtype_t t_yz = -mu_c*rcprho*(w_y + v_z);
+    fpdtype_t t_xx = -2*(mu_c + mu_t)*rcprho*(u_x - ${1.0/3.0}*(u_x + v_y + w_z));
+    fpdtype_t t_yy = -2*(mu_c + mu_t)*rcprho*(v_y - ${1.0/3.0}*(u_x + v_y + w_z));
+    fpdtype_t t_zz = -2*(mu_c + mu_t)*rcprho*(w_z - ${1.0/3.0}*(u_x + v_y + w_z));
+    fpdtype_t t_xy = -(mu_c + mu_t)*rcprho*(v_x + u_y);
+    fpdtype_t t_xz = -(mu_c + mu_t)*rcprho*(u_z + w_x);
+    fpdtype_t t_yz = -(mu_c + mu_t)*rcprho*(w_y + v_z);
 
     fout[0][1] += t_xx;     fout[1][1] += t_xy;     fout[2][1] += t_xz;
     fout[0][2] += t_xy;     fout[1][2] += t_yy;     fout[2][2] += t_yz;
     fout[0][3] += t_xz;     fout[1][3] += t_yz;     fout[2][3] += t_zz;
 
-    fout[0][4] += u*t_xx + v*t_xy + w*t_xz + -mu_c*${c['gamma']/c['Pr']}*T_x;
-    fout[1][4] += u*t_xy + v*t_yy + w*t_yz + -mu_c*${c['gamma']/c['Pr']}*T_y;
-    fout[2][4] += u*t_xz + v*t_yz + w*t_zz + -mu_c*${c['gamma']/c['Pr']}*T_z;
+    fout[0][4] += u*t_xx + v*t_xy + w*t_xz + -(mu_c*${c['gamma']/c['Pr']} + mu_t*${c['gamma']/c['Pr_t']})*T_x;
+    fout[1][4] += u*t_xy + v*t_yy + w*t_yz + -(mu_c*${c['gamma']/c['Pr']} + mu_t*${c['gamma']/c['Pr_t']})*T_y;
+    fout[2][4] += u*t_xz + v*t_yz + w*t_zz + -(mu_c*${c['gamma']/c['Pr']} + mu_t*${c['gamma']/c['Pr_t']})*T_z;
+
+    // Turbulence model gradients 
+    fpdtype_t ku_x = grad_uin[0][5];    fpdtype_t ku_y = grad_uin[1][5];    fpdtype_t ku_z = grad_uin[2][5];
+    fpdtype_t eu_x = grad_uin[0][6];    fpdtype_t eu_y = grad_uin[1][6];    fpdtype_t eu_z = grad_uin[2][6];
+
+    fpdtype_t sig_ku = ${c['sig_k']*c['fk']*c['fk']/c['fe']};
+    fpdtype_t sig_ke = ${c['sig_e']*c['fk']*c['fk']/c['fe']};
+
+    fout[0][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_x;     fout[1][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_y;     fout[2][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_z; 
+    fout[0][6] = -rcprho*(mu_c + mu_t/sig_ke)*eu_x;     fout[1][6] = -rcprho*(mu_c + mu_t/sig_ke)*eu_y;     fout[2][6] = -rcprho*(mu_c + mu_t/sig_ke)*eu_z; 
+
 </%pyfr:macro>
 % endif
