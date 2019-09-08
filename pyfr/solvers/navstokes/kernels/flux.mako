@@ -56,10 +56,10 @@
     fpdtype_t eu_x = grad_uin[0][5];    fpdtype_t eu_y = grad_uin[1][5];
 
     fpdtype_t sig_ku = ${c['sig_k']*c['fk']*c['fk']/c['fe']};
-    fpdtype_t sig_ke = ${c['sig_e']*c['fk']*c['fk']/c['fe']};
+    fpdtype_t sig_eu = ${c['sig_e']*c['fk']*c['fk']/c['fe']};
 
     fout[0][4] = -rcprho*(mu_c + mu_t/sig_ku)*ku_x;     fout[1][4] = -rcprho*(mu_c + mu_t/sig_ku)*ku_y; 
-    fout[0][5] = -rcprho*(mu_c + mu_t/sig_ke)*eu_x;     fout[1][5] = -rcprho*(mu_c + mu_t/sig_ke)*eu_y; 
+    fout[0][5] = -rcprho*(mu_c + mu_t/sig_eu)*eu_x;     fout[1][5] = -rcprho*(mu_c + mu_t/sig_eu)*eu_y; 
 
 
 
@@ -133,10 +133,10 @@
     fpdtype_t eu_x = grad_uin[0][6];    fpdtype_t eu_y = grad_uin[1][6];    fpdtype_t eu_z = grad_uin[2][6];
 
     fpdtype_t sig_ku = ${c['sig_k']*c['fk']*c['fk']/c['fe']};
-    fpdtype_t sig_ke = ${c['sig_e']*c['fk']*c['fk']/c['fe']};
+    fpdtype_t sig_eu = ${c['sig_e']*c['fk']*c['fk']/c['fe']};
 
     fout[0][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_x;     fout[1][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_y;     fout[2][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_z; 
-    fout[0][6] = -rcprho*(mu_c + mu_t/sig_ke)*eu_x;     fout[1][6] = -rcprho*(mu_c + mu_t/sig_ke)*eu_y;     fout[2][6] = -rcprho*(mu_c + mu_t/sig_ke)*eu_z; 
+    fout[0][6] = -rcprho*(mu_c + mu_t/sig_eu)*eu_x;     fout[1][6] = -rcprho*(mu_c + mu_t/sig_eu)*eu_y;     fout[2][6] = -rcprho*(mu_c + mu_t/sig_eu)*eu_z; 
 
 </%pyfr:macro>
 % endif
