@@ -49,7 +49,6 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
         # NEW KERNELS FOR PANS ------------------------------------------
         backend.pointwise.register('pyfr.solvers.navstokes.kernels.negdivconfpans')
 
-        fluxaa = 'flux' in self.antialias
         divfluxaa = 'div-flux' in self.antialias
 
         srctplargs = {
