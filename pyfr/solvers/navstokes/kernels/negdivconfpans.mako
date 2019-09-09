@@ -17,13 +17,11 @@ fpdtype_t eu = max(u[${nvars-1}], ${c['min_eu']});
 fpdtype_t mu_t = ${c['Cmu']}*ku*ku/eu;
 fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} );
 
-% for i in range(ndims):
-	% for j in range(ndims):
-		prod += gradu[${j}][${i}]*(-mu_t*(gradu[${j}][${i}] + gradu[${i}][${j}]));
-		% if (i == j):
-			prod += gradu[${j}][${i}]*(${2.0/3.0}*ku);
-		% endif
-	% endfor
+% for i, j in pyfr.ndrange(ndims, ndims):
+	prod += gradu[${j}][${i}]*(-mu_t*(gradu[${j}][${i}] + gradu[${i}][${j}]));
+	% if (i == j):
+		prod += gradu[${j}][${i}]*(${2.0/3.0}*ku);
+	% endif
 % endfor
 
 
