@@ -28,7 +28,7 @@ fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} )
 
 
 % for i, ex in enumerate(srcex):
-	// Turbulence sources seperately
+	// Turbulence sources separately
 	% if i == (nvars-2):
 		tdivtconf[${i}] = -rcpdjac*tdivtconf[${i}] + ${ex} + (prod - eu);
 	% elif i == (nvars-1):
