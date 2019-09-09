@@ -34,7 +34,7 @@ fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} )
 	% elif i == (nvars-1):
 		tdivtconf[${i}] = -rcpdjac*tdivtconf[${i}] + ${ex} + (${c['fk']} * (${c['Ce1']}*prod*eu/ku - Ce2s*(eu*eu)/ku));
 	% else:
-    	tdivtconf[${i}] = -rcpdjac*tdivtconf[${i}] + ${ex};
+    		tdivtconf[${i}] = -rcpdjac*tdivtconf[${i}] + ${ex};
 	% endif
 % endfor
 
