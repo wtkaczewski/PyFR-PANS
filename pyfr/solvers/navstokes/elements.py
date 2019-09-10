@@ -10,12 +10,15 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
     
     @property
     def _scratch_bufs(self):
-        bufs = {'scal_fpts', 'vect_fpts','scal_upts', 'vect_upts'}
+        bufs = {'scal_fpts', 'vect_fpts', 'scal_upts', 'vect_upts'}
 
         if 'div-flux' in self.antialias:
             bufs |= {'scal_qpts_cpy'}
         else:
             bufs |= {'scal_upts_cpy'}
+
+        if 'flux' in self.antialias:
+            bufs |= {'scal_qpts', 'vect_qpts'}
 
         return bufs
     
@@ -46,8 +49,11 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
             )
 
 
-        # NEW KERNELS FOR PANS ------------------------------------------
+        # ----- NEW KERNELS FOR PANS -----
         backend.pointwise.register('pyfr.solvers.navstokes.kernels.negdivconfpans')
+        backend.pointwise.register('pyfr.solvers.navstokes.kernels.gradcorupans')
+
+        self.prod = self._be.matrix((self.nupts, self.neles), tags={'align'})
 
         srctplargs = {
             'ndims':    self.ndims,
@@ -57,6 +63,17 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
         }
 
 
+        # ----- GRADCORU KERNELS -----
+        
+        self.kernels['gradcoru_upts'] = lambda: backend.kernel(
+            'gradcorupans', tplargs=srctplargs,
+             dims=[self.nupts, self.neles], smats=self.smat_at('upts'),
+             rcpdjac=self.rcpdjac_at('upts'), gradu=self._vect_upts,
+             u=self._scal_upts_cpy,prod=self.prod
+        )
+
+        # ----- NEGDIVCONF KERNELS -----
+
         if 'div-flux' in self.antialias:
             plocqpts = self.ploc_at('qpts') 
             solnqpts = self._scal_qpts_cpy
@@ -65,16 +82,19 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
                 'negdivconfpans', tplargs=srctplargs,
                 dims=[self.nqpts, self.neles], tdivtconf=self._scal_qpts,
                 rcpdjac=self.rcpdjac_at('qpts'), ploc=plocqpts, u=solnqpts,
-                gradu=self._vect_qpts
+                prod=self.prod
             )
+
         else:
             plocupts = self.ploc_at('upts')
             solnupts = self._scal_upts_cpy
-
 
             self.kernels['negdivconf'] = lambda: backend.kernel(
                 'negdivconfpans', tplargs=srctplargs,
                 dims=[self.nupts, self.neles], tdivtconf=self.scal_upts_outb,
                 rcpdjac=self.rcpdjac_at('upts'), ploc=plocupts, u=solnupts, 
-                gradu=self._vect_upts
+                prod=self.prod
             )
+
+
+

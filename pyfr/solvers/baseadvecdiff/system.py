@@ -70,4 +70,5 @@ class BaseAdvectionDiffusionSystem(BaseAdvectionSystem):
 
         # TURBULENCE KERNELS
         q1 << kernels['eles', 'negdivconfpans']()
+        q1 << kernels['eles', 'gradcorupans']()
         runall([q1])
