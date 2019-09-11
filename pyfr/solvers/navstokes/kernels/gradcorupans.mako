@@ -25,11 +25,12 @@ fpdtype_t tmpgradu[${ndims}];
 // Get velocity gradients and TKE production term
 
 prod = 0.0;
-fpdtype_t rcprho = 1.0/u[0];
+fpdtype_t rcprho = 1/u[0];
 fpdtype_t duk_dxj, duj_dxk;
 fpdtype_t ku = max(u[${nvars-2}], ${c['min_ku']});
 fpdtype_t eu = max(u[${nvars-1}], ${c['min_eu']});
 fpdtype_t mu_t = ${c['Cmu']}*ku*ku/eu;
+
 
 % for j in range(0,ndims):
 	% for i in range(ndims):
@@ -41,11 +42,11 @@ fpdtype_t mu_t = ${c['Cmu']}*ku*ku/eu;
 	                                              .format(i=i, k=k)
 	                                              for k in range(ndims))});
 	% endfor
-	
+
 	// Sum production terms only after grad_ij and grad_ji have been evaluated 
 	% for k in range(0,j+1):
-		duk_dxj = rcprho*gradu[${j}][${k+1}] - gradu[${j}][0]*rcprho*u[${k+1}]; // duk_dxj = 1/rho*(drhouk_dxj - drho_dxj*uk)
-		duj_dxk = rcprho*gradu[${k}][${j+1}] - gradu[${k}][0]*rcprho*u[${j+1}]; // duj_dxk = 1/rho*(drhouj_dxk - drho_dxk*uj)
+		duk_dxj = rcprho*(gradu[${j}][${k+1}] - gradu[${j}][0]*u[${k+1}]); // duk_dxj = 1/rho*(drhouk_dxj - drho_dxj*uk)
+		duj_dxk = rcprho*(gradu[${k}][${j+1}] - gradu[${k}][0]*u[${j+1}]); // duj_dxk = 1/rho*(drhouj_dxk - drho_dxk*uj)
 
 	    // TKE production term
 	    prod += duk_dxj*(-mu_t*(duk_dxj + duj_dxk));

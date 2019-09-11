@@ -78,6 +78,10 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
             plocqpts = self.ploc_at('qpts') 
             solnqpts = self._scal_qpts_cpy
 
+            self.kernels['copy_soln'] = lambda: backend.kernel(
+                'copy', self._scal_qpts_cpy, self._scal_qpts
+            )
+
             self.kernels['negdivconf'] = lambda: backend.kernel(
                 'negdivconfpans', tplargs=srctplargs,
                 dims=[self.nqpts, self.neles], tdivtconf=self._scal_qpts,
@@ -88,6 +92,10 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
         else:
             plocupts = self.ploc_at('upts')
             solnupts = self._scal_upts_cpy
+
+            self.kernels['copy_soln'] = lambda: backend.kernel(
+                'copy', self._scal_upts_cpy, self.scal_upts_inb
+            )
 
             self.kernels['negdivconf'] = lambda: backend.kernel(
                 'negdivconfpans', tplargs=srctplargs,
