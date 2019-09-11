@@ -53,7 +53,8 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
         backend.pointwise.register('pyfr.solvers.navstokes.kernels.negdivconfpans')
         backend.pointwise.register('pyfr.solvers.navstokes.kernels.gradcorupans')
 
-        self.prod = self._be.matrix((self.nupts, self.neles), tags={'align'})
+        self.ku_src = self._be.matrix((self.nupts, self.neles), tags={'align'})
+        self.eu_src = self._be.matrix((self.nupts, self.neles), tags={'align'})
 
         srctplargs = {
             'ndims':    self.ndims,
@@ -69,10 +70,12 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
             'gradcorupans', tplargs=srctplargs,
              dims=[self.nupts, self.neles], smats=self.smat_at('upts'),
              rcpdjac=self.rcpdjac_at('upts'), gradu=self._vect_upts,
-             u=self._scal_upts_cpy,prod=self.prod
+             u=self.scal_upts_inb, ku_src=self.ku_src, eu_src=self.eu_src
         )
 
         # ----- NEGDIVCONF KERNELS -----
+
+        # Possible optimization when scal_upts_inb.active != scal_upts_outb.active -- Generate two negdivconf kernels (upts and upts_cpy) and let rhs() decide which one to call 
 
         if 'div-flux' in self.antialias:
             plocqpts = self.ploc_at('qpts') 
@@ -86,22 +89,19 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
                 'negdivconfpans', tplargs=srctplargs,
                 dims=[self.nqpts, self.neles], tdivtconf=self._scal_qpts,
                 rcpdjac=self.rcpdjac_at('qpts'), ploc=plocqpts, u=solnqpts,
-                prod=self.prod
+                ku_src=self.ku_src, eu_src=self.eu_src
             )
 
         else:
             plocupts = self.ploc_at('upts')
             solnupts = self._scal_upts_cpy
 
-            self.kernels['copy_soln'] = lambda: backend.kernel(
-                'copy', self._scal_upts_cpy, self.scal_upts_inb
-            )
 
             self.kernels['negdivconf'] = lambda: backend.kernel(
                 'negdivconfpans', tplargs=srctplargs,
                 dims=[self.nupts, self.neles], tdivtconf=self.scal_upts_outb,
                 rcpdjac=self.rcpdjac_at('upts'), ploc=plocupts, u=solnupts, 
-                prod=self.prod
+                ku_src=self.ku_src, eu_src=self.eu_src
             )
 
 

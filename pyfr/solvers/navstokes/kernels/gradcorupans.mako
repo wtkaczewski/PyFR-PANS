@@ -7,7 +7,9 @@
               rcpdjac='in fpdtype_t'
               gradu='inout fpdtype_t[${str(ndims)}][${str(nvars)}]'
               u='in fpdtype_t[${str(nvars)}]'
-              prod='inout fpdtype_t'>
+              ku_src='inout fpdtype_t'
+              eu_src='inout fpdtype_t'>
+
 
 fpdtype_t tmpgradu[${ndims}];
 
@@ -24,13 +26,13 @@ fpdtype_t tmpgradu[${ndims}];
 
 // Get velocity gradients and TKE production term
 
-prod = 0.0;
+fpdtype_t prod = 0.0;
 fpdtype_t rcprho = 1/u[0];
 fpdtype_t duk_dxj, duj_dxk;
 fpdtype_t ku = max(u[${nvars-2}], ${c['min_ku']});
 fpdtype_t eu = max(u[${nvars-1}], ${c['min_eu']});
 fpdtype_t mu_t = ${c['Cmu']}*ku*ku/eu;
-
+fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} );
 
 % for j in range(0,ndims):
 	% for i in range(ndims):
@@ -59,7 +61,9 @@ fpdtype_t mu_t = ${c['Cmu']}*ku*ku/eu;
 
 % endfor
 
-
+// Calculate ku and eu source terms
+ku_src = prod - eu;
+eu_src = (${c['fk']} * (${c['Ce1']}*prod*eu/ku - Ce2s*(eu*eu)/ku));
 
 // Get gradients for energy and turbulence model variables
 % for j in range(ndims+1, nvars):
