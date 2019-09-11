@@ -10,12 +10,58 @@
               prod='inout fpdtype_t'>
 
 fpdtype_t tmpgradu[${ndims}];
+
+// Get density gradients first
+% for i in range(ndims):
+    tmpgradu[${i}] = gradu[${i}][${0}];
+% endfor	
+% for i in range(ndims):
+    gradu[${i}][${0}] = rcpdjac*(${' + '.join('smats[{k}][{i}]*tmpgradu[{k}]'
+                                              .format(i=i, k=k)
+                                              for k in range(ndims))});
+% endfor
+
+
+// Get velocity gradients and TKE production term
+
 prod = 0.0;
+fpdtype_t rcprho = 1.0/u[0];
+fpdtype_t duk_dxj, duj_dxk;
 fpdtype_t ku = max(u[${nvars-2}], ${c['min_ku']});
 fpdtype_t eu = max(u[${nvars-1}], ${c['min_eu']});
 fpdtype_t mu_t = ${c['Cmu']}*ku*ku/eu;
 
-% for j in range(nvars):
+% for j in range(0,ndims):
+	% for i in range(ndims):
+	    tmpgradu[${i}] = gradu[${i}][${j+1}];
+	% endfor
+
+	% for i in range(ndims):
+	    gradu[${i}][${j+1}] = rcpdjac*(${' + '.join('smats[{k}][{i}]*tmpgradu[{k}]'
+	                                              .format(i=i, k=k)
+	                                              for k in range(ndims))});
+	% endfor
+	
+	// Sum production terms only after grad_ij and grad_ji have been evaluated 
+	% for k in range(0,j+1):
+		duk_dxj = rcprho*gradu[${j}][${k+1}] - gradu[${j}][0]*rcprho*u[${k+1}]; // duk_dxj = 1/rho*(drhouk_dxj - drho_dxj*uk)
+		duj_dxk = rcprho*gradu[${k}][${j+1}] - gradu[${k}][0]*rcprho*u[${j+1}]; // duj_dxk = 1/rho*(drhouj_dxk - drho_dxk*uj)
+
+	    // TKE production term
+	    prod += duk_dxj*(-mu_t*(duk_dxj + duj_dxk));
+	    % if (k == j):
+			prod += duk_dxj*(${2.0/3.0}*ku);
+		% else:
+	    	prod += duj_dxk*(-mu_t*(duj_dxk + duk_dxj));
+	    % endif
+	% endfor
+
+% endfor
+
+
+
+// Get gradients for energy and turbulence model variables
+% for j in range(ndims+1, nvars):
 	% for i in range(ndims):
 	    tmpgradu[${i}] = gradu[${i}][${j}];
 	% endfor
@@ -23,13 +69,9 @@ fpdtype_t mu_t = ${c['Cmu']}*ku*ku/eu;
 	    gradu[${i}][${j}] = rcpdjac*(${' + '.join('smats[{k}][{i}]*tmpgradu[{k}]'
 	                                              .format(i=i, k=k)
 	                                              for k in range(ndims))});
-	    // Turbulence production term
-	    prod += gradu[${j}][${i}]*(-mu_t*(gradu[${j}][${i}] + gradu[${i}][${j}]));
-	    % if (i == j):
-			prod += gradu[${j}][${i}]*(${2.0/3.0}*ku);
-		% endif
 		
 	% endfor
 % endfor
+
 
 </%pyfr:kernel>
