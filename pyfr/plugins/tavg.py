@@ -137,6 +137,9 @@ class TavgPlugin(BasePlugin):
                 # Normalise
                 accmex = [a / tdiff for a in self.accmex]
 
+                # CHANGED TO WRITE ONLY CURRENT TIME STEP
+                accmex =  currex
+
                 stats = Inifile()
                 stats.set('data', 'prefix', 'tavg')
                 stats.set('data', 'fields',
