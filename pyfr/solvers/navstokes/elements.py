@@ -50,6 +50,7 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
 
 
         # ----- NEW KERNELS FOR PANS -----
+        
         backend.pointwise.register('pyfr.solvers.navstokes.kernels.negdivconfpans')
         backend.pointwise.register('pyfr.solvers.navstokes.kernels.gradcorupans')
 

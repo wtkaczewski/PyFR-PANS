@@ -21,7 +21,7 @@
 	% elif i == (nvars-1):
 		tdivtconf[${i}] = -rcpdjac*tdivtconf[${i}] + ${ex} + eu_src;
 	% else:
-    	tdivtconf[${i}] = -rcpdjac*tdivtconf[${i}] + ${ex};
+    tdivtconf[${i}] = -rcpdjac*tdivtconf[${i}] + ${ex};
 	% endif
 % endfor
 

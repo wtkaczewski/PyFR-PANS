@@ -34,7 +34,7 @@
     // Turbulence model variables and turbulent viscosity
     fpdtype_t ku = max(uin[4], ${c['min_ku']});
     fpdtype_t eu = max(uin[5], ${c['min_eu']});
-    fpdtype_t mu_t = ${c['Cmu']}*ku*ku/eu;
+    fpdtype_t mu_t = max(0.0, ${c['Cmu']}*ku*ku/eu);
 
     // Compute temperature derivatives (c_v*dT/d[x,y])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x));
@@ -105,7 +105,7 @@
 
     fpdtype_t ku = max(uin[5], ${c['min_ku']});
     fpdtype_t eu = max(uin[6], ${c['min_eu']});
-    fpdtype_t mu_t = ${c['Cmu']}*ku*ku/eu;
+    fpdtype_t mu_t = max(0.0, ${c['Cmu']}*ku*ku/eu);
 
     // Compute temperature derivatives (c_v*dT/d[x,y,z])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x + w*w_x));

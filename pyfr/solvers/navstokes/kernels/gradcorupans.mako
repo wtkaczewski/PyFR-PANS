@@ -31,7 +31,7 @@ fpdtype_t rcprho = 1/u[0];
 fpdtype_t duk_dxj, duj_dxk;
 fpdtype_t ku = max(u[${nvars-2}], ${c['min_ku']});
 fpdtype_t eu = max(u[${nvars-1}], ${c['min_eu']});
-fpdtype_t mu_t = ${c['Cmu']}*ku*ku/eu;
+fpdtype_t mu_t = max(0.0, ${c['Cmu']}*ku*ku/eu);
 fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} );
 
 % for j in range(0,ndims):
@@ -45,25 +45,40 @@ fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} )
 	                                              for k in range(ndims))});
 	% endfor
 
-	// Sum production terms only after grad_ij and grad_ji have been evaluated 
-	% for k in range(0,j+1):
-		duk_dxj = rcprho*(gradu[${j}][${k+1}] - gradu[${j}][0]*u[${k+1}]); // duk_dxj = 1/rho*(drhouk_dxj - drho_dxj*uk)
-		duj_dxk = rcprho*(gradu[${k}][${j+1}] - gradu[${k}][0]*u[${j+1}]); // duj_dxk = 1/rho*(drhouj_dxk - drho_dxk*uj)
-
-	    // TKE production term
-	    prod += duk_dxj*(-mu_t*(duk_dxj + duj_dxk));
-	    % if (k == j):
-			prod += duk_dxj*(${2.0/3.0}*ku);
-		% else:
-	    	prod += duj_dxk*(-mu_t*(duj_dxk + duk_dxj));
-	    % endif
-	% endfor
-
 % endfor
 
+
+// DEBUGGING CODE
+fpdtype_t Sjk = 0.0;
+fpdtype_t Tjk = 0.0;
+fpdtype_t trc = 0.0;
+fpdtype_t dui_dxi;
+
+% for i in range(ndims):
+	dui_dxi = rcprho*(gradu[${i}][${i+1}] - gradu[${i}][0]*u[${i+1}]); 
+	trc += dui_dxi;
+% endfor
+
+% for j,k in pyfr.ndrange(ndims,ndims):
+	duk_dxj = rcprho*(gradu[${j}][${k+1}] - gradu[${j}][0]*u[${k+1}]); // duk_dxj = 1/rho*(drhouk_dxj - drho_dxj*uk)
+	duj_dxk = rcprho*(gradu[${k}][${j+1}] - gradu[${k}][0]*u[${j+1}]); // duj_dxk = 1/rho*(drhouj_dxk - drho_dxk*uj)
+
+	Sjk = 0.5*(duk_dxj + duj_dxk);
+	% if (j == k):
+		Tjk = rcprho*mu_t*(2*Sjk - ${2.0/3.0}*trc) - ${2.0/3.0}*ku;
+	% else:
+		Tjk = rcprho*mu_t*(2*Sjk);
+	% endif
+	prod += duj_dxk*Tjk;
+% endfor
+// END DEBUGGING CODE
+
+
+
 // Calculate ku and eu source terms
-ku_src = prod - eu;
-eu_src = (${c['fk']} * (${c['Ce1']}*prod*eu/ku - Ce2s*(eu*eu)/ku));
+ku_src = ${c['tmswitch']}*(prod - eu);
+eu_src = ${c['tmswitch']}*(${c['fk']} * (${c['Ce1']}*prod*eu/ku - Ce2s*(eu*eu)/ku));
+
 
 // Get gradients for energy and turbulence model variables
 % for j in range(ndims+1, nvars):
