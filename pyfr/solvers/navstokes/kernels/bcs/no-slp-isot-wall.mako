@@ -20,7 +20,7 @@
 % endfor
     ur[${nvars - 3}] = ${c['cpTw']/c['gamma']}*ur[0]
                      + 0.5*(1.0/ur[0])*${pyfr.dot('ur[{i}]', i=(1, ndims + 1))};
-    ur[${nvars - 2}] = ul[${nvars - 2}];
+    ur[${nvars - 2}] = 0.0;
     ur[${nvars - 1}] = ul[${nvars - 1}];
 </%pyfr:macro>
 
