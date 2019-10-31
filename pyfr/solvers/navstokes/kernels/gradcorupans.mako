@@ -29,9 +29,12 @@ fpdtype_t tmpgradu[${ndims}];
 fpdtype_t prod = 0.0;
 fpdtype_t rcprho = 1/u[0];
 fpdtype_t duk_dxj, duj_dxk;
-fpdtype_t ku = max(u[${nvars-2}], ${c['min_ku']});
-fpdtype_t eu = max(u[${nvars-1}], ${c['min_eu']});
-fpdtype_t mu_t = max(0.0, ${c['Cmu']}*ku*ku/eu);
+
+fpdtype_t ku = u[${nvars-2}];
+fpdtype_t eu = u[${nvars-1}];
+
+fpdtype_t mu_t = (${c['Cmu']}*ku*ku/eu < 0.0) ? 0.0 : ${c['Cmu']}*ku*ku/eu;
+
 fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} );
 
 % for j in range(0,ndims):
@@ -53,6 +56,7 @@ fpdtype_t Sjk = 0.0;
 fpdtype_t Tjk = 0.0;
 fpdtype_t trc = 0.0;
 fpdtype_t dui_dxi;
+fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 
 % for i in range(ndims):
 	dui_dxi = rcprho*(gradu[${i}][${i+1}] - gradu[${i}][0]*u[${i+1}]); 
@@ -65,7 +69,7 @@ fpdtype_t dui_dxi;
 
 	Sjk = 0.5*(duk_dxj + duj_dxk);
 	% if (j == k):
-		Tjk = rcprho*mu_t*(2*Sjk - ${2.0/3.0}*trc) - ${2.0/3.0}*ku;
+		Tjk = rcprho*mu_t*(2*Sjk - ${2.0/3.0}*trc) - ${2.0/3.0}*ku_temp;
 	% else:
 		Tjk = rcprho*mu_t*(2*Sjk);
 	% endif
@@ -76,16 +80,10 @@ fpdtype_t dui_dxi;
 
 
 // Calculate ku and eu source terms
-% if ku > ${c['min_ku']}:
-	ku_src = ${c['tmswitch']}*(prod - eu);
-% else:
-	ku_src = ${c['ku_limiter']}
-% endif
-% if eu > ${c['min_eu']}:
-	eu_src = ${c['tmswitch']}*(${c['fk']} * (${c['Ce1']}*prod*eu/ku - Ce2s*(eu*eu)/ku));
-% else:
-	eu_src = ${c['eu_limiter']}
-% endif
+
+ku_src = (ku < ${c['min_ku']}) ? ${c['ku_limiter']} : ${c['tmswitch']}*(prod - eu);
+eu_src = (eu < ${c['min_ku']}) ? ${c['eu_limiter']} : ${c['tmswitch']}*(${c['fk']} * (${c['Ce1']}*prod*eu/ku_temp - Ce2s*(eu*eu)/ku_temp));
+
 
 
 // Get gradients for energy and turbulence model variables
