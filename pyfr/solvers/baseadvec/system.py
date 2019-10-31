@@ -35,7 +35,7 @@ class BaseAdvectionSystem(BaseSystem):
         q1 << kernels['eles', 'tdivtconf']()
         if ('eles', 'tdivf_qpts') in kernels:
             q1 << kernels['eles', 'tdivf_qpts']()
-            q1 << kernels['eles', 'negdivconf'](t=t)
+            q1 << kernels['eles', 'negdivconf'](t=t, rhouforce=self.rhouforce)
             q1 << kernels['eles', 'divf_upts']()
         else:
             q1 << kernels['eles', 'negdivconf'](t=t)

@@ -11,279 +11,301 @@ Graph = namedtuple('Graph', ['vtab', 'etab', 'vwts', 'ewts'])
 
 
 class BasePartitioner(object):
-    # Approximate element weightings at each polynomial order
-    elewtsmap = {
-        1: {'quad': 5, 'tri': 3, 'tet': 3, 'hex': 9, 'pri': 6, 'pyr': 4},
-        2: {'quad': 6, 'tri': 3, 'tet': 3, 'hex': 16, 'pri': 8, 'pyr': 5},
-        3: {'quad': 6, 'tri': 3, 'tet': 3, 'hex': 24, 'pri': 10, 'pyr': 6},
-        4: {'quad': 7, 'tri': 3, 'tet': 3, 'hex': 30, 'pri': 12, 'pyr': 7},
-        5: {'quad': 7, 'tri': 3, 'tet': 3, 'hex': 34, 'pri': 13, 'pyr': 7},
-        6: {'quad': 8, 'tri': 3, 'tet': 3, 'hex': 38, 'pri': 14, 'pyr': 8}
-    }
-
-    def __init__(self, partwts, elewts=None, order=None, opts={}):
-        self.partwts = partwts
-        self.nparts = len(partwts)
-
-        if elewts is not None:
-            self.elewts = elewts
-        elif order is not None:
-            self.elewts = self.elewtsmap[min(order, max(self.elewtsmap))]
-        else:
-            raise ValueError('Must provide either elewts or order')
-
-        # Parse the options list
-        self.opts = {}
-        for k, v in dict(self.dflt_opts, **opts).items():
-            if k in self.int_opts:
-                self.opts[k] = int(v)
-            elif k in self.enum_opts:
-                self.opts[k] = self.enum_opts[k][v]
-            else:
-                raise ValueError('Invalid partitioner option')
-
-    def _combine_mesh_parts(self, mesh):
-        # Get the per-partition element counts
-        pinf = mesh.partition_info('spt')
-
-        # Shape points and element number offsets
-        spts = defaultdict(list)
-        offs = defaultdict(dict)
-
-        for en, pn in pinf.items():
-            for i, n in enumerate(pn):
-                if n > 0:
-                    offs[en][i] = sum(s.shape[1] for s in spts[en])
-                    spts[en].append(mesh['spt_{0}_p{1}'.format(en, i)])
-
-        def offset_con(con, pr):
-            con = con.copy().astype('U4,i4,i1,i1')
-
-            for en, pn in pinf.items():
-                if pn[pr] > 0:
-                    con['f1'][np.where(con['f0'] == en)] += offs[en][pr]
-
-            return con
-
-        # Connectivity
-        intcon, mpicon, bccon = [], {}, defaultdict(list)
-
-        for f in mesh:
-            mi = re.match(r'con_p(\d+)$', f)
-            mm = re.match(r'con_p(\d+)p(\d+)$', f)
-            bc = re.match(r'bcon_(.+?)_p(\d+)$', f)
-
-            if mi:
-                intcon.append(offset_con(mesh[f], int(mi.group(1))))
-            elif mm:
-                l, r = int(mm.group(1)), int(mm.group(2))
-                lcon = offset_con(mesh[f], l)
-
-                if (r, l) in mpicon:
-                    rcon = mpicon.pop((r, l))
-                    intcon.append(np.vstack([lcon, rcon]))
-                else:
-                    mpicon[l, r] = lcon
-            elif bc:
-                name, l = bc.group(1), int(bc.group(2))
-                bccon[name].append(offset_con(mesh[f], l))
-
-        # Output data type
-        dtype = 'S4,i4,i1,i1'
-
-        # Concatenate these arrays to from the new mesh
-        newmesh = {'con_p0': np.hstack(intcon).astype(dtype)}
-
-        for k, v in spts.items():
-            newmesh['spt_{0}_p0'.format(k)] = np.hstack(v)
-
-        for k, v in bccon.items():
-            newmesh['bcon_{0}_p0'.format(k)] = np.hstack(v).astype(dtype)
-
-        return newmesh
-
-    def _combine_soln_parts(self, soln):
-        newsoln = defaultdict(list)
-
-        for f, (en, shape) in soln.array_info('soln').items():
-            newsoln['soln_{0}_p0'.format(en)].append(soln[f])
-
-        newsoln = {k: np.dstack(v) for k, v in newsoln.items()}
-        newsoln['config'] = soln['config']
-        newsoln['stats'] = soln['stats']
-
-        return newsoln
-
-    def _construct_graph(self, mesh):
-        # Edges of the dual graph
-        con = mesh['con_p0'].astype('U4,i4,i1,i1')
-        con = np.hstack([con, con[::-1]])
-
-        # Sort by the left hand side
-        idx = np.lexsort([con['f0'][0], con['f1'][0]])
-        con = con[:, idx]
-
-        # Left and right hand side element types/indicies
-        lhs, rhs = con[['f0', 'f1']]
-
-        # Compute vertex offsets
-        vtab = np.where(lhs[1:] != lhs[:-1])[0]
-        vtab = np.concatenate(([0], vtab + 1, [len(lhs)]))
+	# Approximate element weightings at each polynomial order
+	elewtsmap = {
+		1: {'quad': 5, 'tri': 3, 'tet': 3, 'hex': 9, 'pri': 6, 'pyr': 4},
+		2: {'quad': 6, 'tri': 3, 'tet': 3, 'hex': 16, 'pri': 8, 'pyr': 5},
+		3: {'quad': 6, 'tri': 3, 'tet': 3, 'hex': 24, 'pri': 10, 'pyr': 6},
+		4: {'quad': 7, 'tri': 3, 'tet': 3, 'hex': 30, 'pri': 12, 'pyr': 7},
+		5: {'quad': 7, 'tri': 3, 'tet': 3, 'hex': 34, 'pri': 13, 'pyr': 7},
+		6: {'quad': 8, 'tri': 3, 'tet': 3, 'hex': 38, 'pri': 14, 'pyr': 8}
+	}
+
+	def __init__(self, partwts, elewts=None, order=None, opts={}):
+		self.partwts = partwts
+		self.nparts = len(partwts)
+
+		if elewts is not None:
+			self.elewts = elewts
+		elif order is not None:
+			self.elewts = self.elewtsmap[min(order, max(self.elewtsmap))]
+		else:
+			raise ValueError('Must provide either elewts or order')
+
+		# Parse the options list
+		self.opts = {}
+		for k, v in dict(self.dflt_opts, **opts).items():
+			if k in self.int_opts:
+				self.opts[k] = int(v)
+			elif k in self.enum_opts:
+				self.opts[k] = self.enum_opts[k][v]
+			else:
+				raise ValueError('Invalid partitioner option')
+
+	def _combine_mesh_parts(self, mesh):
+		# Get the per-partition element counts
+		pinf = mesh.partition_info('spt')
+
+		# Shape points and element number offsets
+		spts = defaultdict(list)
+		offs = defaultdict(dict)
+
+		for en, pn in pinf.items():
+			for i, n in enumerate(pn):
+				if n > 0:
+					offs[en][i] = sum(s.shape[1] for s in spts[en])
+					spts[en].append(mesh['spt_{0}_p{1}'.format(en, i)])
+
+		def offset_con(con, pr):
+			con = con.copy().astype('U4,i4,i1,i1')
+
+			for en, pn in pinf.items():
+				if pn[pr] > 0:
+					con['f1'][np.where(con['f0'] == en)] += offs[en][pr]
+
+			return con
+
+		# Connectivity
+		intcon, mpicon, bccon, pccon = [], {}, defaultdict(list), defaultdict(list)
+
+		for f in mesh:
+			mi = re.match(r'con_p(\d+)$', f)
+			mm = re.match(r'con_p(\d+)p(\d+)$', f)
+			bc = re.match(r'bcon_(.+?)_p(\d+)$', f)
+			pc = re.match(r'pcon_(.+?)_p(\d+)$', f)
+
+			if mi:
+				intcon.append(offset_con(mesh[f], int(mi.group(1))))
+			elif mm:
+				l, r = int(mm.group(1)), int(mm.group(2))
+				lcon = offset_con(mesh[f], l)
+
+				if (r, l) in mpicon:
+					rcon = mpicon.pop((r, l))
+					intcon.append(np.vstack([lcon, rcon]))
+				else:
+					mpicon[l, r] = lcon
+			elif bc:
+				name, l = bc.group(1), int(bc.group(2))
+				bccon[name].append(offset_con(mesh[f], l))
+			elif pc:
+				name, l = pc.group(1), int(pc.group(2))
+				pccon[name].append(offset_con(mesh[f], l))
+
+
+		# Output data type
+		dtype = 'S4,i4,i1,i1'
+
+		# Concatenate these arrays to from the new mesh
+		newmesh = {'con_p0': np.hstack(intcon).astype(dtype)}
+
+		for k, v in spts.items():
+			newmesh['spt_{0}_p0'.format(k)] = np.hstack(v)
+
+		for k, v in bccon.items():
+			newmesh['bcon_{0}_p0'.format(k)] = np.hstack(v).astype(dtype)
+
+		for k, v in pccon.items():
+			newmesh['pcon_{0}_p0'.format(k)] = np.hstack(v).astype(dtype)
+
+		return newmesh
+
+	def _combine_soln_parts(self, soln):
+		newsoln = defaultdict(list)
+
+		for f, (en, shape) in soln.array_info('soln').items():
+			newsoln['soln_{0}_p0'.format(en)].append(soln[f])
+
+		newsoln = {k: np.dstack(v) for k, v in newsoln.items()}
+		newsoln['config'] = soln['config']
+		newsoln['stats'] = soln['stats']
+
+		return newsoln
+
+	def _construct_graph(self, mesh):
+		# Edges of the dual graph
+		con = mesh['con_p0'].astype('U4,i4,i1,i1')
+		con = np.hstack([con, con[::-1]])
+
+		# Sort by the left hand side
+		idx = np.lexsort([con['f0'][0], con['f1'][0]])
+		con = con[:, idx]
+
+		# Left and right hand side element types/indicies
+		lhs, rhs = con[['f0', 'f1']]
+
+		# Compute vertex offsets
+		vtab = np.where(lhs[1:] != lhs[:-1])[0]
+		vtab = np.concatenate(([0], vtab + 1, [len(lhs)]))
+
+		# Compute the element type/index to vertex number map
+		vetimap = [tuple(lhs[i]) for i in vtab[:-1]]
+		etivmap = {k: v for v, k in enumerate(vetimap)}
+
+		# Prepare the list of edges for each vertex
+		etab = np.array([etivmap[tuple(r)] for r in rhs])
+
+		# Prepare the list of vertex and edge weights
+		vwts = np.array([self.elewts[t] for t, i in vetimap])
+		ewts = np.ones_like(etab)
+
+		return Graph(vtab, etab, vwts, ewts), vetimap
+
+	def _partition_graph(self, graph, partwts):
+		pass
+
+	def _partition_spts(self, mesh, vparts, vetimap):
+		# Get the shape point arrays from the mesh
+		spt_p0 = {}
+		for f in mesh:
+			if f.startswith('spt'):
+				spt_p0[f.split('_')[1]] = mesh[f]
 
-        # Compute the element type/index to vertex number map
-        vetimap = [tuple(lhs[i]) for i in vtab[:-1]]
-        etivmap = {k: v for v, k in enumerate(vetimap)}
+		# Partition the shape points
+		spt_px = defaultdict(list)
+		for (etype, eidxg), part in zip(vetimap, vparts):
+			spt_px[etype, part].append(spt_p0[etype][:, eidxg, :])
 
-        # Prepare the list of edges for each vertex
-        etab = np.array([etivmap[tuple(r)] for r in rhs])
+		# Stack
+		return {'spt_{0}_p{1}'.format(*k): np.array(v).swapaxes(0, 1)
+				for k, v in spt_px.items()}
 
-        # Prepare the list of vertex and edge weights
-        vwts = np.array([self.elewts[t] for t, i in vetimap])
-        ewts = np.ones_like(etab)
+	def _partition_soln(self, soln, vparts, vetimap):
+		# Get the solution arrays from the file
+		soln_p0 = {}
+		for f in soln:
+			if f.startswith('soln'):
+				soln_p0[f.split('_')[1]] = soln[f]
 
-        return Graph(vtab, etab, vwts, ewts), vetimap
+		# Partition the solutions
+		soln_px = defaultdict(list)
+		for (etype, eidxg), part in zip(vetimap, vparts):
+			soln_px[etype, part].append(soln_p0[etype][..., eidxg])
 
-    def _partition_graph(self, graph, partwts):
-        pass
+		# Stack
+		return {'soln_{0}_p{1}'.format(*k): np.dstack(v)
+				for k, v in soln_px.items()}
 
-    def _partition_spts(self, mesh, vparts, vetimap):
-        # Get the shape point arrays from the mesh
-        spt_p0 = {}
-        for f in mesh:
-            if f.startswith('spt'):
-                spt_p0[f.split('_')[1]] = mesh[f]
+	def _partition_con(self, mesh, vparts, vetimap):
+		con_px = defaultdict(list)
+		con_pxpy = defaultdict(list)
+		bcon_px = defaultdict(list)
+		pcon_px = defaultdict(list)
 
-        # Partition the shape points
-        spt_px = defaultdict(list)
-        for (etype, eidxg), part in zip(vetimap, vparts):
-            spt_px[etype, part].append(spt_p0[etype][:, eidxg, :])
+		# Global-to-local element index map
+		eleglmap = defaultdict(list)
+		pcounter = Counter()
 
-        # Stack
-        return {'spt_{0}_p{1}'.format(*k): np.array(v).swapaxes(0, 1)
-                for k, v in spt_px.items()}
+		for (etype, eidxg), part in zip(vetimap, vparts):
+			eleglmap[etype].append((part, pcounter[etype, part]))
+			pcounter[etype, part] += 1
 
-    def _partition_soln(self, soln, vparts, vetimap):
-        # Get the solution arrays from the file
-        soln_p0 = {}
-        for f in soln:
-            if f.startswith('soln'):
-                soln_p0[f.split('_')[1]] = soln[f]
+		# Generate the face connectivity
+		for l, r in zip(*mesh['con_p0'].astype('U4,i4,i1,i1')):
+			letype, leidxg, lfidx, lflags = l
+			retype, reidxg, rfidx, rflags = r
+
+			lpart, leidxl = eleglmap[letype][leidxg]
+			rpart, reidxl = eleglmap[retype][reidxg]
 
-        # Partition the solutions
-        soln_px = defaultdict(list)
-        for (etype, eidxg), part in zip(vetimap, vparts):
-            soln_px[etype, part].append(soln_p0[etype][..., eidxg])
+			conl = (letype, leidxl, lfidx, lflags)
+			conr = (retype, reidxl, rfidx, rflags)
 
-        # Stack
-        return {'soln_{0}_p{1}'.format(*k): np.dstack(v)
-                for k, v in soln_px.items()}
+			if lpart == rpart:
+				con_px[lpart].append([conl, conr])
+			else:
+				con_pxpy[lpart, rpart].append(conl)
+				con_pxpy[rpart, lpart].append(conr)
 
-    def _partition_con(self, mesh, vparts, vetimap):
-        con_px = defaultdict(list)
-        con_pxpy = defaultdict(list)
-        bcon_px = defaultdict(list)
+		# Generate boundary conditions
+		for f in mesh:
+			m = re.match('bcon_(.+?)_p0$', f)
+			if m:
+				lhs = mesh[f].astype('U4,i4,i1,i1')
 
-        # Global-to-local element index map
-        eleglmap = defaultdict(list)
-        pcounter = Counter()
+				for lpetype, leidxg, lfidx, lflags in lhs:
+					lpart, leidxl = eleglmap[lpetype][leidxg]
+					conl = (lpetype, leidxl, lfidx, lflags)
 
-        for (etype, eidxg), part in zip(vetimap, vparts):
-            eleglmap[etype].append((part, pcounter[etype, part]))
-            pcounter[etype, part] += 1
+					bcon_px[m.group(1), lpart].append(conl)
+		for f in mesh:
+			m = re.match('pcon_(.+?)_p0$', f)
+			if m:
+				lhs = mesh[f].astype('U4,i4,i1,i1')
 
-        # Generate the face connectivity
-        for l, r in zip(*mesh['con_p0'].astype('U4,i4,i1,i1')):
-            letype, leidxg, lfidx, lflags = l
-            retype, reidxg, rfidx, rflags = r
+				for lpetype, leidxg, lfidx, lflags in lhs:
+					lpart, leidxl = eleglmap[lpetype][leidxg]
+					conl = (lpetype, leidxl, lfidx, lflags)
 
-            lpart, leidxl = eleglmap[letype][leidxg]
-            rpart, reidxl = eleglmap[retype][reidxg]
+					pcon_px[m.group(1), lpart].append(conl)
 
-            conl = (letype, leidxl, lfidx, lflags)
-            conr = (retype, reidxl, rfidx, rflags)
+		# Output data type
+		dtype = 'S4,i4,i1,i1'
 
-            if lpart == rpart:
-                con_px[lpart].append([conl, conr])
-            else:
-                con_pxpy[lpart, rpart].append(conl)
-                con_pxpy[rpart, lpart].append(conr)
+		# Output
+		ret = {}
 
-        # Generate boundary conditions
-        for f in mesh:
-            m = re.match('bcon_(.+?)_p0$', f)
-            if m:
-                lhs = mesh[f].astype('U4,i4,i1,i1')
+		for k, v in con_px.items():
+			ret['con_p{0}'.format(k)] = np.array(v, dtype=dtype).T
 
-                for lpetype, leidxg, lfidx, lflags in lhs:
-                    lpart, leidxl = eleglmap[lpetype][leidxg]
-                    conl = (lpetype, leidxl, lfidx, lflags)
+		for k, v in con_pxpy.items():
+			ret['con_p{0}p{1}'.format(*k)] = np.array(v, dtype=dtype)
 
-                    bcon_px[m.group(1), lpart].append(conl)
+		for k, v in bcon_px.items():
+			ret['bcon_{0}_p{1}'.format(*k)] = np.array(v, dtype=dtype)
 
-        # Output data type
-        dtype = 'S4,i4,i1,i1'
+		for k, v in pcon_px.items():
+			ret['pcon_{0}_p{1}'.format(*k)] = np.array(v, dtype=dtype)
 
-        # Output
-        ret = {}
+		return ret
 
-        for k, v in con_px.items():
-            ret['con_p{0}'.format(k)] = np.array(v, dtype=dtype).T
+	def partition(self, mesh):
+		# Extract the current UUID from the mesh
+		curruuid = mesh['mesh_uuid']
 
-        for k, v in con_pxpy.items():
-            ret['con_p{0}p{1}'.format(*k)] = np.array(v, dtype=dtype)
+		# Combine any pre-existing parititons
+		mesh = self._combine_mesh_parts(mesh)
 
-        for k, v in bcon_px.items():
-            ret['bcon_{0}_p{1}'.format(*k)] = np.array(v, dtype=dtype)
+		# Perform the partitioning
+		if self.nparts > 1:
+			# Obtain the dual graph for this mesh
+			graph, vetimap = self._construct_graph(mesh)
 
-        return ret
+			# Partition the graph
+			vparts = self._partition_graph(graph, self.partwts)
 
-    def partition(self, mesh):
-        # Extract the current UUID from the mesh
-        curruuid = mesh['mesh_uuid']
+			# Partition the connectivity portion of the mesh
+			newmesh = self._partition_con(mesh, vparts, vetimap)
 
-        # Combine any pre-existing parititons
-        mesh = self._combine_mesh_parts(mesh)
+			# Handle the shape points
+			newmesh.update(self._partition_spts(mesh, vparts, vetimap))
+		# Short circuit
+		else:
+			newmesh = mesh
 
-        # Perform the partitioning
-        if self.nparts > 1:
-            # Obtain the dual graph for this mesh
-            graph, vetimap = self._construct_graph(mesh)
+		# Generate a new UUID for the mesh
+		newmesh['mesh_uuid'] = newuuid = str(uuid.uuid4())
 
-            # Partition the graph
-            vparts = self._partition_graph(graph, self.partwts)
+		# Build the solution converter
+		def partition_soln(soln):
+			# Check the UUID
+			if curruuid != soln['mesh_uuid']:
+				raise ValueError('Mismatched solution/mesh')
 
-            # Partition the connectivity portion of the mesh
-            newmesh = self._partition_con(mesh, vparts, vetimap)
+			# Combine any pre-existing parititons
+			soln = self._combine_soln_parts(soln)
 
-            # Handle the shape points
-            newmesh.update(self._partition_spts(mesh, vparts, vetimap))
-        # Short circuit
-        else:
-            newmesh = mesh
+			# Partition
+			if self.nparts > 1:
+				newsoln = self._partition_soln(soln, vparts, vetimap)
+			else:
+				newsoln = soln
 
-        # Generate a new UUID for the mesh
-        newmesh['mesh_uuid'] = newuuid = str(uuid.uuid4())
+			# Handle the metadata
+			newsoln['config'] = soln['config']
+			newsoln['stats'] = soln['stats']
+			newsoln['mesh_uuid'] = newuuid
 
-        # Build the solution converter
-        def partition_soln(soln):
-            # Check the UUID
-            if curruuid != soln['mesh_uuid']:
-                raise ValueError('Mismatched solution/mesh')
+			return newsoln
 
-            # Combine any pre-existing parititons
-            soln = self._combine_soln_parts(soln)
-
-            # Partition
-            if self.nparts > 1:
-                newsoln = self._partition_soln(soln, vparts, vetimap)
-            else:
-                newsoln = soln
-
-            # Handle the metadata
-            newsoln['config'] = soln['config']
-            newsoln['stats'] = soln['stats']
-            newsoln['mesh_uuid'] = newuuid
-
-            return newsoln
-
-        return newmesh, partition_soln
+		return newmesh, partition_soln

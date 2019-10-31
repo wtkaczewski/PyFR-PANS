@@ -14,11 +14,12 @@ class BaseAdvectionElements(BaseElements):
         else:
             bufs = {'scal_fpts', 'vect_upts'}
 
-        if self._soln_in_src_exprs:
-            if 'div-flux' in self.antialias:
-                bufs |= {'scal_qpts_cpy'}
-            else:
-                bufs |= {'scal_upts_cpy'}
+        #if self._soln_in_src_exprs:
+        # Solution in source experessions required for inlet forcing energy term
+        if 'div-flux' in self.antialias:
+            bufs |= {'scal_qpts_cpy'}
+        else:
+            bufs |= {'scal_upts_cpy'}
 
         return bufs
 
@@ -89,7 +90,7 @@ class BaseAdvectionElements(BaseElements):
         # Transformed to physical divergence kernel + source term
         if divfluxaa:
             plocqpts = self.ploc_at('qpts') if plocsrc else None
-            solnqpts = self._scal_qpts_cpy if solnsrc else None
+            solnqpts = self._scal_qpts_cpy 
 
             if solnsrc:
                 self.kernels['copy_soln'] = lambda: backend.kernel(
@@ -103,7 +104,7 @@ class BaseAdvectionElements(BaseElements):
             )
         else:
             plocupts = self.ploc_at('upts') if plocsrc else None
-            solnupts = self._scal_upts_cpy if solnsrc else None
+            solnupts = self._scal_upts_cpy 
 
             if solnsrc:
                 self.kernels['copy_soln'] = lambda: backend.kernel(

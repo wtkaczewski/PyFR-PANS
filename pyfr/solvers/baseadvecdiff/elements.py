@@ -14,11 +14,12 @@ class BaseAdvectionDiffusionElements(BaseAdvectionElements):
         elif 'div-flux' in self.antialias:
             bufs |= {'scal_qpts'}
 
-        if self._soln_in_src_exprs:
-            if 'div-flux' in self.antialias:
-                bufs |= {'scal_qpts_cpy'}
-            else:
-                bufs |= {'scal_upts_cpy'}
+        #if self._soln_in_src_exprs:
+        # Solution in source experessions required for inlet forcing energy term
+        if 'div-flux' in self.antialias:
+            bufs |= {'scal_qpts_cpy'}
+        else:
+            bufs |= {'scal_upts_cpy'}
 
         return bufs
 
