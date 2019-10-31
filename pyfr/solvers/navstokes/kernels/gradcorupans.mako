@@ -76,8 +76,16 @@ fpdtype_t dui_dxi;
 
 
 // Calculate ku and eu source terms
-ku_src = ${c['tmswitch']}*(prod - eu);
-eu_src = ${c['tmswitch']}*(${c['fk']} * (${c['Ce1']}*prod*eu/ku - Ce2s*(eu*eu)/ku));
+% if ku_src > ${c['min_ku']}:
+	ku_src = ${c['tmswitch']}*(prod - eu);
+% else:
+	ku_src = ${c['ku_limiter']}
+% endif
+% if eu_src > ${c['min_eu']}:
+	eu_src = ${c['tmswitch']}*(${c['fk']} * (${c['Ce1']}*prod*eu/ku - Ce2s*(eu*eu)/ku));
+% else:
+	eu_src = ${c['eu_limiter']}
+% endif
 
 
 // Get gradients for energy and turbulence model variables
