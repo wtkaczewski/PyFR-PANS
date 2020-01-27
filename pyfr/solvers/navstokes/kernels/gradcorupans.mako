@@ -35,6 +35,7 @@ fpdtype_t ku = u[${nvars-2}];
 fpdtype_t eu = u[${nvars-1}];
 
 fpdtype_t mu_t = (${c['Cmu']}*ku*ku/eu < 0.0) ? 0.0 : ${c['Cmu']}*ku*ku/eu;
+
 mu_t = (1.0 - exp(-${c['tdvc']}*t))*mu_t;
 
 fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} );
@@ -83,8 +84,8 @@ fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 
 // Calculate ku and eu source terms
 
-ku_src = (ku < ${c['min_ku']}) ? ${c['ku_limiter']} : ${c['tmswitch']}*(prod - eu);
-eu_src = (eu < ${c['min_ku']}) ? ${c['eu_limiter']} : ${c['tmswitch']}*(${c['fk']} * (${c['Ce1']}*prod*eu/ku_temp - Ce2s*(eu*eu)/ku_temp));
+ku_src = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ${c['tmswitch']}*(prod - eu);
+eu_src = (eu < ${c['min_ku']}) ? ${c['min_eu']} : ${c['tmswitch']}*(${c['fk']} * (${c['Ce1']}*prod*eu/ku_temp - Ce2s*(eu*eu)/ku_temp));
 
 
 

@@ -34,7 +34,9 @@
     // Turbulence model variables and turbulent viscosity
     fpdtype_t ku = (uin[4] > ${c['min_ku']}) ? uin[4] : ${c['min_ku']};
     fpdtype_t eu = (uin[5] > ${c['min_eu']}) ? uin[5] : ${c['min_eu']};
+
     fpdtype_t mu_t = ${c['tmswitch']}*${c['Cmu']}*ku*ku/eu;
+    
     mu_t = (mu_t > 0.0) ? mu_t : 0.0;
 	mu_t = (1.0 - exp(-${c['tdvc']}*t))*mu_t;
 
