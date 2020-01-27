@@ -10,12 +10,13 @@
               u='in fpdtype_t[${str(nvars)}]'
               smats='in fpdtype_t[${str(ndims)}][${str(ndims)}]'
               artvisc='in broadcast fpdtype_t'
-              f='inout fpdtype_t[${str(ndims)}][${str(nvars)}]'>
+              f='inout fpdtype_t[${str(ndims)}][${str(nvars)}]'
+              t='scalar fpdtype_t'>
     // Compute the flux (F = Fi + Fv)
     fpdtype_t ftemp[${ndims}][${nvars}];
     fpdtype_t p, v[${ndims}];
     ${pyfr.expand('inviscid_flux', 'u', 'ftemp', 'p', 'v')};
-    ${pyfr.expand('viscous_flux_add', 'u', 'f', 'ftemp')};
+    ${pyfr.expand('viscous_flux_add', 'u', 'f', 'ftemp', 't')};
     ${pyfr.expand('artificial_viscosity_add', 'f', 'ftemp', 'artvisc')};
 
     // Transform the fluxes

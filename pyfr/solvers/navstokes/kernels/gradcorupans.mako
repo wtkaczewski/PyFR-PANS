@@ -8,7 +8,8 @@
               gradu='inout fpdtype_t[${str(ndims)}][${str(nvars)}]'
               u='in fpdtype_t[${str(nvars)}]'
               ku_src='inout fpdtype_t'
-              eu_src='inout fpdtype_t'>
+              eu_src='inout fpdtype_t'
+              t = 'scalar fpdtype_t'>
 
 
 fpdtype_t tmpgradu[${ndims}];
@@ -34,6 +35,7 @@ fpdtype_t ku = u[${nvars-2}];
 fpdtype_t eu = u[${nvars-1}];
 
 fpdtype_t mu_t = (${c['Cmu']}*ku*ku/eu < 0.0) ? 0.0 : ${c['Cmu']}*ku*ku/eu;
+mu_t = (1.0 - exp(-${c['tdvc']}*t))*mu_t;
 
 fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} );
 

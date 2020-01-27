@@ -3,7 +3,7 @@
 <%namespace module='pyfr.backends.base.makoutil' name='pyfr'/>
 
 % if ndims == 2:
-<%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout'>
+<%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout, t'>
     fpdtype_t rho = uin[0], rhou = uin[1], rhov = uin[2], E = uin[3];
 
     fpdtype_t rcprho = 1.0/rho;
@@ -36,6 +36,7 @@
     fpdtype_t eu = (uin[5] > ${c['min_eu']}) ? uin[5] : ${c['min_eu']};
     fpdtype_t mu_t = ${c['tmswitch']}*${c['Cmu']}*ku*ku/eu;
     mu_t = (mu_t > 0.0) ? mu_t : 0.0;
+	mu_t = (1.0 - exp(-${c['tdvc']}*t))*mu_t;
 
     // Compute temperature derivatives (c_v*dT/d[x,y])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x));
@@ -67,7 +68,7 @@
 
 </%pyfr:macro>
 % elif ndims == 3:
-<%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout'>
+<%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout, t'>
     fpdtype_t rho  = uin[0];
     fpdtype_t rhou = uin[1], rhov = uin[2], rhow = uin[3];
     fpdtype_t E    = uin[4];
@@ -108,6 +109,7 @@
     fpdtype_t eu = (uin[6] > ${c['min_eu']}) ? uin[6] : ${c['min_eu']};
     fpdtype_t mu_t = ${c['tmswitch']}*${c['Cmu']}*ku*ku/eu;
     mu_t = (mu_t > 0.0) ? mu_t : 0.0;
+	mu_t = (1.0 - exp(-${c['tdvc']}*t))*mu_t;
 
     // Compute temperature derivatives (c_v*dT/d[x,y,z])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x + w*w_x));
