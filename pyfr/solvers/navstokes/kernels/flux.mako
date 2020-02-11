@@ -38,7 +38,7 @@
     fpdtype_t mu_t = ${c['tmswitch']}*${c['Cmu']}*ku*ku/eu;
     
     mu_t = (mu_t > 0.0) ? mu_t : 0.0;
-	mu_t = (1.0 - exp(-${c['tdvc']}*t))*mu_t;
+	mu_t = (1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
 
     // Compute temperature derivatives (c_v*dT/d[x,y])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x));
@@ -111,7 +111,7 @@
     fpdtype_t eu = (uin[6] > ${c['min_eu']}) ? uin[6] : ${c['min_eu']};
     fpdtype_t mu_t = ${c['tmswitch']}*${c['Cmu']}*ku*ku/eu;
     mu_t = (mu_t > 0.0) ? mu_t : 0.0;
-	mu_t = (1.0 - exp(-${c['tdvc']}*t))*mu_t;
+	mu_t = (1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
 
     // Compute temperature derivatives (c_v*dT/d[x,y,z])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x + w*w_x));

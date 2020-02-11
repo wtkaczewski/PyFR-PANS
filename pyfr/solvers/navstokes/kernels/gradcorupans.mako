@@ -36,7 +36,7 @@ fpdtype_t eu = u[${nvars-1}];
 
 fpdtype_t mu_t = (${c['Cmu']}*ku*ku/eu < 0.0) ? 0.0 : ${c['Cmu']}*ku*ku/eu;
 
-mu_t = (1.0 - exp(-${c['tdvc']}*t))*mu_t;
+mu_t = (1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
 
 fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} );
 
