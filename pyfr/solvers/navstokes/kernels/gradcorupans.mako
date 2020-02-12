@@ -38,6 +38,8 @@ fpdtype_t mu_t = (${c['Cmu']}*ku*ku/eu < 0.0) ? 0.0 : ${c['Cmu']}*ku*ku/eu;
 
 mu_t = (1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
 
+mu_t = (mu_t/${c['mu']} < ${c['max_mutrat']}) ? mu_t : ${c['max_mutrat']}*${c['mu']};
+
 fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} );
 
 % for j in range(0,ndims):
