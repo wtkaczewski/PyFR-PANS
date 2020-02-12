@@ -84,8 +84,8 @@ fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 
 // Calculate ku and eu source terms
 
-ku_src = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ${c['tmswitch']}*(prod - eu);
-eu_src = (eu < ${c['min_ku']}) ? ${c['min_eu']} : ${c['tmswitch']}*(${c['fk']} * (${c['Ce1']}*prod*eu/ku_temp - Ce2s*(eu*eu)/ku_temp));
+ku_src = ${c['tmswitch']}*(prod - eu);
+eu_src = ${c['tmswitch']}*(${c['fk']} * (${c['Ce1']}*prod*eu/ku_temp - Ce2s*(eu*eu)/ku_temp));
 
 
 
