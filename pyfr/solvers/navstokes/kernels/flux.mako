@@ -37,6 +37,7 @@
 
 	fpdtype_t mu_t = (rho*ku/wu < 0.0) ? 0.0 : rho*ku/wu;
 	mu_t = ${c['tmswitch']}*(1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
+	mu_t = (mu_t > ${c['mu']}*${c['max_mutrat']}) ? ${c['mu']}*${c['max_mutrat']} : mu_t;
 
     // Compute temperature derivatives (c_v*dT/d[x,y])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x));
@@ -110,6 +111,7 @@
 
 	fpdtype_t mu_t = (rho*ku/wu < 0.0) ? 0.0 : rho*ku/wu;
 	mu_t = ${c['tmswitch']}*(1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
+	mu_t = (mu_t > ${c['mu']}*${c['max_mutrat']}) ? ${c['mu']}*${c['max_mutrat']} : mu_t;
 
     // Compute temperature derivatives (c_v*dT/d[x,y,z])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x + w*w_x));

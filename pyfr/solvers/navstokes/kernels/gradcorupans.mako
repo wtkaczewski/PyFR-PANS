@@ -50,6 +50,7 @@ fpdtype_t wu = u[${nvars-1}];
 
 fpdtype_t mu_t = (rho*ku/wu < 0.0) ? 0.0 : rho*ku/wu;
 mu_t = ${c['tmswitch']}*(1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
+mu_t = (mu_t > ${c['mu']}*${c['max_mutrat']}) ? ${c['mu']}*${c['max_mutrat']} : mu_t;
 
 fpdtype_t betaprime = ${c['alpha']}*${c['betastar']} - ${c['alpha']}*${c['betastar']}/${c['fw']} + ${c['beta']}/${c['fw']} ;
 
