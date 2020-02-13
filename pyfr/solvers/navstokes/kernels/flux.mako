@@ -35,10 +35,8 @@
     fpdtype_t ku = (uin[4] > ${c['min_ku']}) ? uin[4] : ${c['min_ku']};
     fpdtype_t wu = (uin[5] > ${c['min_wu']}) ? uin[5] : ${c['min_wu']};
 
-    fpdtype_t mu_t = ${c['tmswitch']}*${c['Cmu']}*ku*ku/wu;
-    
-    mu_t = (mu_t > 0.0) ? mu_t : 0.0;
-	mu_t = (1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
+	fpdtype_t mu_t = (rho*ku/wu < 0.0) ? 0.0 : rho*ku/wu;
+	mu_t = ${c['tmswitch']}*(1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
 
     // Compute temperature derivatives (c_v*dT/d[x,y])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x));
@@ -59,8 +57,8 @@
     fpdtype_t ku_x = grad_uin[0][4];    fpdtype_t ku_y = grad_uin[1][4];
     fpdtype_t wu_x = grad_uin[0][5];    fpdtype_t wu_y = grad_uin[1][5];
 
-    fpdtype_t sig_ku = ${c['sig_k']*c['fk']*c['fk']/c['fe']};
-    fpdtype_t sig_wu = ${c['sig_e']*c['fk']*c['fk']/c['fe']};
+    fpdtype_t sig_ku = ${c['sig_k']*c['fk']/c['fw']};
+    fpdtype_t sig_wu = ${c['sig_e']*c['fk']/c['fw']};
 
     fout[0][4] = -rcprho*(mu_c + mu_t/sig_ku)*ku_x;     fout[1][4] = -rcprho*(mu_c + mu_t/sig_ku)*ku_y; 
     fout[0][5] = -rcprho*(mu_c + mu_t/sig_wu)*wu_x;     fout[1][5] = -rcprho*(mu_c + mu_t/sig_wu)*wu_y; 
@@ -109,9 +107,9 @@
 
     fpdtype_t ku = (uin[5] > ${c['min_ku']}) ? uin[5] : ${c['min_ku']};
     fpdtype_t wu = (uin[6] > ${c['min_wu']}) ? uin[6] : ${c['min_wu']};
-    fpdtype_t mu_t = ${c['tmswitch']}*${c['Cmu']}*ku*ku/wu;
-    mu_t = (mu_t > 0.0) ? mu_t : 0.0;
-	mu_t = (1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
+
+	fpdtype_t mu_t = (rho*ku/wu < 0.0) ? 0.0 : rho*ku/wu;
+	mu_t = ${c['tmswitch']}*(1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
 
     // Compute temperature derivatives (c_v*dT/d[x,y,z])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x + w*w_x));
@@ -138,8 +136,8 @@
     fpdtype_t ku_x = grad_uin[0][5];    fpdtype_t ku_y = grad_uin[1][5];    fpdtype_t ku_z = grad_uin[2][5];
     fpdtype_t wu_x = grad_uin[0][6];    fpdtype_t wu_y = grad_uin[1][6];    fpdtype_t wu_z = grad_uin[2][6];
 
-    fpdtype_t sig_ku = ${c['sig_k']*c['fk']*c['fk']/c['fe']};
-    fpdtype_t sig_wu = ${c['sig_e']*c['fk']*c['fk']/c['fe']};
+    fpdtype_t sig_ku = ${c['sig_k']*c['fk']/c['fw']};
+    fpdtype_t sig_wu = ${c['sig_e']*c['fk']/c['fw']};
 
     fout[0][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_x;     fout[1][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_y;     fout[2][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_z; 
     fout[0][6] = -rcprho*(mu_c + mu_t/sig_wu)*wu_x;     fout[1][6] = -rcprho*(mu_c + mu_t/sig_wu)*wu_y;     fout[2][6] = -rcprho*(mu_c + mu_t/sig_wu)*wu_z; 

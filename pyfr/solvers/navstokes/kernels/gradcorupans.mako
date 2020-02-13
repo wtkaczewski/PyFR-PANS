@@ -25,22 +25,7 @@ fpdtype_t tmpgradu[${ndims}];
 % endfor
 
 
-// Get velocity gradients and TKE production term
-
-fpdtype_t prod = 0.0;
-fpdtype_t rcprho = 1/u[0];
-fpdtype_t duk_dxj, duj_dxk;
-
-fpdtype_t ku = u[${nvars-2}];
-fpdtype_t wu = u[${nvars-1}];
-
-fpdtype_t mu_t = (${c['Cmu']}*ku*ku/wu < 0.0) ? 0.0 : ${c['Cmu']}*ku*ku/wu;
-
-mu_t = (1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
-
-fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} );
-
-% for j in range(0,ndims):
+% for j in range(ndims):
 	% for i in range(ndims):
 	    tmpgradu[${i}] = gradu[${i}][${j+1}];
 	% endfor
@@ -53,12 +38,27 @@ fpdtype_t Ce2s = ${c['Ce1']} + (${c['Ce2']} - ${c['Ce1']})*(${c['fk']/c['fe']} )
 
 % endfor
 
+// Get velocity gradients and TKE production term
+
+fpdtype_t prod = 0.0;
+fpdtype_t rho = u[0];
+fpdtype_t rcprho = 1/u[0];
+fpdtype_t duk_dxj, duj_dxk;
+
+fpdtype_t ku = u[${nvars-2}];
+fpdtype_t wu = u[${nvars-1}];
+
+fpdtype_t mu_t = (rho*ku/wu < 0.0) ? 0.0 : rho*ku/wu;
+mu_t = ${c['tmswitch']}*(1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
+
+fpdtype_t betaprime = ${c['alpha']}*${c['betastar']} - ${c['alpha']}*${c['betastar']}/${c['fw']} + ${c['beta']}/${c['fw']} ;
 
 // DEBUGGING CODE
 fpdtype_t Sjk = 0.0;
 fpdtype_t Tjk = 0.0;
 fpdtype_t trc = 0.0;
 fpdtype_t dui_dxi;
+
 fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 
 % for i in range(ndims):
@@ -76,16 +76,18 @@ fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 	% else:
 		Tjk = rcprho*mu_t*(2*Sjk);
 	% endif
-	prod += duj_dxk*Tjk;
+	prod += duj_dxk*Tjk; // CHECK THESIS?
 % endfor
 // END DEBUGGING CODE
+
+fpdtype_t prod_u = ${c['fk']}*prod + ${c['betastar']}*ku*wu*(1.0 - 1.0/${c['fw']});
 
 
 
 // Calculate ku and wu source terms
 
-ku_src = ${c['tmswitch']}*(prod - wu);
-wu_src = ${c['tmswitch']}*(${c['fk']} * (${c['Ce1']}*prod*wu/ku_temp - Ce2s*(wu*wu)/ku_temp));
+ku_src = ${c['tmswitch']}*(rho*prod_u - ${c['betastar']}*rho*ku*wu);
+wu_src = ${c['tmswitch']}*(${c['alpha']}*rho*prod_u*wu/ku - betaprime*wu*wu);
 
 
 
