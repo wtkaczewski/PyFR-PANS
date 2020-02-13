@@ -108,7 +108,8 @@ class NavierStokesNoSlpIsotWallBCInters(NavierStokesBaseBCInters):
     def __init__(self, be, lhs, elemap, cfgsect, cfg):
         super().__init__(be, lhs, elemap, cfgsect, cfg)
 
-        self._tpl_c['cpTw'], = self._eval_opts(['cpTw'])
+        self._tpl_c['cpTw'], = self._eval_opts(['cpTw'])   
+        self._tpl_c['wuWall'], = self._eval_opts(['wuWall'])  
         self._tpl_c.update(
             self._exp_opts('uvw'[:self.ndims], lhs,
                            default={'u': 0, 'v': 0, 'w': 0})
@@ -118,6 +119,10 @@ class NavierStokesNoSlpIsotWallBCInters(NavierStokesBaseBCInters):
 class NavierStokesNoSlpAdiaWallBCInters(NavierStokesBaseBCInters):
     type = 'no-slp-adia-wall'
     cflux_state = 'ghost'
+    def __init__(self, be, lhs, elemap, cfgsect, cfg):
+        super().__init__(be, lhs, elemap, cfgsect, cfg)
+
+        self._tpl_c['wuWall'], = self._eval_opts(['wuWall'])  
 
 
 class NavierStokesSlpAdiaWallBCInters(NavierStokesBaseBCInters):
