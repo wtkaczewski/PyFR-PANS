@@ -60,8 +60,8 @@
     fpdtype_t sig_ku = ${c['sig_k']*c['fk']/c['fw']};
     fpdtype_t sig_wu = ${c['sig_e']*c['fk']/c['fw']};
 
-    fout[0][4] = -rcprho*(mu_c + mu_t/sig_ku)*ku_x;     fout[1][4] = -rcprho*(mu_c + mu_t/sig_ku)*ku_y; 
-    fout[0][5] = -rcprho*(mu_c + mu_t/sig_wu)*wu_x;     fout[1][5] = -rcprho*(mu_c + mu_t/sig_wu)*wu_y; 
+    fout[0][4] += -rcprho*(mu_c + mu_t/sig_ku)*ku_x;     fout[1][4] += -rcprho*(mu_c + mu_t/sig_ku)*ku_y; 
+    fout[0][5] += -rcprho*(mu_c + mu_t/sig_wu)*wu_x;     fout[1][5] += -rcprho*(mu_c + mu_t/sig_wu)*wu_y; 
 
 
 
@@ -139,8 +139,8 @@
     fpdtype_t sig_ku = ${c['sig_k']*c['fk']/c['fw']};
     fpdtype_t sig_wu = ${c['sig_e']*c['fk']/c['fw']};
 
-    fout[0][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_x;     fout[1][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_y;     fout[2][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_z; 
-    fout[0][6] = -rcprho*(mu_c + mu_t/sig_wu)*wu_x;     fout[1][6] = -rcprho*(mu_c + mu_t/sig_wu)*wu_y;     fout[2][6] = -rcprho*(mu_c + mu_t/sig_wu)*wu_z; 
+    fout[0][5] += -rcprho*(mu_c + mu_t/sig_ku)*ku_x;     fout[1][5] += -rcprho*(mu_c + mu_t/sig_ku)*ku_y;     fout[2][5] += -rcprho*(mu_c + mu_t/sig_ku)*ku_z; 
+    fout[0][6] += -rcprho*(mu_c + mu_t/sig_wu)*wu_x;     fout[1][6] += -rcprho*(mu_c + mu_t/sig_wu)*wu_y;     fout[2][6] += -rcprho*(mu_c + mu_t/sig_wu)*wu_z; 
 
 </%pyfr:macro>
 % endif
