@@ -10,5 +10,5 @@
                        0.5*(1.0/ur[0])*${pyfr.dot('ur[{i}]', i=(1, ndims + 1))};
     // turbulence variables
     ur[${nvars - 2}] = ${c['ku']};
-    ur[${nvars - 1}] = ${c['eu']};
+    ur[${nvars - 1}] = ${c['wu']};
 </%pyfr:macro>

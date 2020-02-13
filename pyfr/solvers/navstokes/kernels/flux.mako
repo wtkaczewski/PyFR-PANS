@@ -33,9 +33,9 @@
 
     // Turbulence model variables and turbulent viscosity
     fpdtype_t ku = (uin[4] > ${c['min_ku']}) ? uin[4] : ${c['min_ku']};
-    fpdtype_t eu = (uin[5] > ${c['min_eu']}) ? uin[5] : ${c['min_eu']};
+    fpdtype_t wu = (uin[5] > ${c['min_wu']}) ? uin[5] : ${c['min_wu']};
 
-    fpdtype_t mu_t = ${c['tmswitch']}*${c['Cmu']}*ku*ku/eu;
+    fpdtype_t mu_t = ${c['tmswitch']}*${c['Cmu']}*ku*ku/wu;
     
     mu_t = (mu_t > 0.0) ? mu_t : 0.0;
 	mu_t = (1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
@@ -57,13 +57,13 @@
 
     // Turbulence model gradients 
     fpdtype_t ku_x = grad_uin[0][4];    fpdtype_t ku_y = grad_uin[1][4];
-    fpdtype_t eu_x = grad_uin[0][5];    fpdtype_t eu_y = grad_uin[1][5];
+    fpdtype_t wu_x = grad_uin[0][5];    fpdtype_t wu_y = grad_uin[1][5];
 
     fpdtype_t sig_ku = ${c['sig_k']*c['fk']*c['fk']/c['fe']};
-    fpdtype_t sig_eu = ${c['sig_e']*c['fk']*c['fk']/c['fe']};
+    fpdtype_t sig_wu = ${c['sig_e']*c['fk']*c['fk']/c['fe']};
 
     fout[0][4] = -rcprho*(mu_c + mu_t/sig_ku)*ku_x;     fout[1][4] = -rcprho*(mu_c + mu_t/sig_ku)*ku_y; 
-    fout[0][5] = -rcprho*(mu_c + mu_t/sig_eu)*eu_x;     fout[1][5] = -rcprho*(mu_c + mu_t/sig_eu)*eu_y; 
+    fout[0][5] = -rcprho*(mu_c + mu_t/sig_wu)*wu_x;     fout[1][5] = -rcprho*(mu_c + mu_t/sig_wu)*wu_y; 
 
 
 
@@ -108,8 +108,8 @@
 % endif
 
     fpdtype_t ku = (uin[5] > ${c['min_ku']}) ? uin[5] : ${c['min_ku']};
-    fpdtype_t eu = (uin[6] > ${c['min_eu']}) ? uin[6] : ${c['min_eu']};
-    fpdtype_t mu_t = ${c['tmswitch']}*${c['Cmu']}*ku*ku/eu;
+    fpdtype_t wu = (uin[6] > ${c['min_wu']}) ? uin[6] : ${c['min_wu']};
+    fpdtype_t mu_t = ${c['tmswitch']}*${c['Cmu']}*ku*ku/wu;
     mu_t = (mu_t > 0.0) ? mu_t : 0.0;
 	mu_t = (1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
 
@@ -136,13 +136,13 @@
 
     // Turbulence model gradients 
     fpdtype_t ku_x = grad_uin[0][5];    fpdtype_t ku_y = grad_uin[1][5];    fpdtype_t ku_z = grad_uin[2][5];
-    fpdtype_t eu_x = grad_uin[0][6];    fpdtype_t eu_y = grad_uin[1][6];    fpdtype_t eu_z = grad_uin[2][6];
+    fpdtype_t wu_x = grad_uin[0][6];    fpdtype_t wu_y = grad_uin[1][6];    fpdtype_t wu_z = grad_uin[2][6];
 
     fpdtype_t sig_ku = ${c['sig_k']*c['fk']*c['fk']/c['fe']};
-    fpdtype_t sig_eu = ${c['sig_e']*c['fk']*c['fk']/c['fe']};
+    fpdtype_t sig_wu = ${c['sig_e']*c['fk']*c['fk']/c['fe']};
 
     fout[0][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_x;     fout[1][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_y;     fout[2][5] = -rcprho*(mu_c + mu_t/sig_ku)*ku_z; 
-    fout[0][6] = -rcprho*(mu_c + mu_t/sig_eu)*eu_x;     fout[1][6] = -rcprho*(mu_c + mu_t/sig_eu)*eu_y;     fout[2][6] = -rcprho*(mu_c + mu_t/sig_eu)*eu_z; 
+    fout[0][6] = -rcprho*(mu_c + mu_t/sig_wu)*wu_x;     fout[1][6] = -rcprho*(mu_c + mu_t/sig_wu)*wu_y;     fout[2][6] = -rcprho*(mu_c + mu_t/sig_wu)*wu_z; 
 
 </%pyfr:macro>
 % endif

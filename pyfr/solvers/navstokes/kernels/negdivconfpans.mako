@@ -9,7 +9,7 @@
               u='in fpdtype_t[${str(nvars)}]'
               rcpdjac='in fpdtype_t'
               ku_src='inout fpdtype_t'
-              eu_src='inout fpdtype_t'
+              wu_src='inout fpdtype_t'
               rhouforce='scalar fpdtype_t'>
 
 
@@ -18,7 +18,7 @@
 	% if i == (nvars-2):
 		tdivtconf[${i}] = -rcpdjac*tdivtconf[${i}] + ${ex} + ku_src;
 	% elif i == (nvars-1):
-		tdivtconf[${i}] = -rcpdjac*tdivtconf[${i}] + ${ex} + eu_src;
+		tdivtconf[${i}] = -rcpdjac*tdivtconf[${i}] + ${ex} + wu_src;
 	% else:
     tdivtconf[${i}] = -rcpdjac*tdivtconf[${i}] + ${ex};
 	% endif

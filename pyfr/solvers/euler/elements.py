@@ -6,11 +6,11 @@ from pyfr.solvers.baseadvec import BaseAdvectionElements
 class BaseFluidElements(object):
     formulations = ['std', 'dual']
 
-    privarmap = {2: ['rho', 'u', 'v', 'p', 'ku', 'eu'],
-                 3: ['rho', 'u', 'v', 'w', 'p', 'ku', 'eu']}
+    privarmap = {2: ['rho', 'u', 'v', 'p', 'ku', 'wu'],
+                 3: ['rho', 'u', 'v', 'w', 'p', 'ku', 'wu']}
 
-    convarmap = {2: ['rho', 'rhou', 'rhov', 'E', 'ku', 'eu'],
-                 3: ['rho', 'rhou', 'rhov', 'rhow', 'E', 'ku', 'eu']}
+    convarmap = {2: ['rho', 'rhou', 'rhov', 'E', 'ku', 'wu'],
+                 3: ['rho', 'rhou', 'rhov', 'rhow', 'E', 'ku', 'wu']}
 
     dualcoeffs = convarmap
 
@@ -19,19 +19,19 @@ class BaseFluidElements(object):
             ('velocity', ['u', 'v']),
             ('pressure', ['p']),
             ('K_u', ['ku']),
-            ('Eps_u', ['eu'])],
+            ('Omega_u', ['wu'])],
         3: [('density', ['rho']),
             ('velocity', ['u', 'v', 'w']),
             ('pressure', ['p']),
             ('K_u', ['ku']),
-            ('Eps_u', ['eu'])]
+            ('Omega_u', ['wu'])]
     }
 
 
     @staticmethod
     def pri_to_con(pris, cfg):
         rho, p = pris[0], pris[-3]
-        ku, eu = pris[-2], pris[-1]
+        ku, wu = pris[-2], pris[-1]
 
         # Multiply velocity components by rho
         rhovs = [rho*c for c in pris[1:-3]]
@@ -40,12 +40,12 @@ class BaseFluidElements(object):
         gamma = cfg.getfloat('constants', 'gamma')
         E = p/(gamma - 1) + 0.5*rho*sum(c*c for c in pris[1:-3])
 
-        return [rho] + rhovs + [E] + [ku,eu]
+        return [rho] + rhovs + [E] + [ku,wu]
 
     @staticmethod
     def con_to_pri(cons, cfg):
         rho, E = cons[0], cons[-3]
-        ku, eu = cons[-2], cons[-1]
+        ku, wu = cons[-2], cons[-1]
 
         # Divide momentum components by rho
         vs = [rhov/rho for rhov in cons[1:-3]]
@@ -53,7 +53,7 @@ class BaseFluidElements(object):
         # Compute the pressure
         gamma = cfg.getfloat('constants', 'gamma')
         p = (gamma - 1)*(E - 0.5*rho*sum(v*v for v in vs))
-        return [rho] + vs + [p] + [ku,eu]
+        return [rho] + vs + [p] + [ku,wu]
 
 
 

@@ -27,10 +27,10 @@
 
     // Turbulence variable fluxes
     fpdtype_t ku = max(s[${nvars-2}], ${c['min_ku']});
-    fpdtype_t eu = max(s[${nvars-1}], ${c['min_eu']});
+    fpdtype_t wu = max(s[${nvars-1}], ${c['min_wu']});
 % for i in range(ndims):
      f[${i}][${nvars-2}] = ${c['tmswitch']}*ku*v[${i}];
-     f[${i}][${nvars-1}] = ${c['tmswitch']}*eu*v[${i}];
+     f[${i}][${nvars-1}] = ${c['tmswitch']}*wu*v[${i}];
 % endfor
 
 </%pyfr:macro>

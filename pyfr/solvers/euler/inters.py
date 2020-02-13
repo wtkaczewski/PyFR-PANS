@@ -63,7 +63,7 @@ class EulerSupInflowBCInters(EulerBaseBCInters):
         super().__init__(be, lhs, elemap, cfgsect, cfg)
 
         tplc = self._exp_opts(
-            ['rho', 'p', 'u', 'v', 'w'][:self.ndims + 2] + ['ku','eu'], lhs
+            ['rho', 'p', 'u', 'v', 'w'][:self.ndims + 2] + ['ku','wu'], lhs
         )
         self._tpl_c.update(tplc)
         
@@ -76,7 +76,7 @@ class EulerCharRiemInvBCInters(EulerBaseBCInters):
         super().__init__(be, lhs, elemap, cfgsect, cfg)
 
         tplc = self._exp_opts(
-            ['rho', 'p', 'u', 'v', 'w'][:self.ndims + 2 ] + ['ku','eu'], lhs
+            ['rho', 'p', 'u', 'v', 'w'][:self.ndims + 2 ] + ['ku','wu'], lhs
         )
         self._tpl_c.update(tplc)
 

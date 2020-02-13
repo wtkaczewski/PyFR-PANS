@@ -10,7 +10,7 @@
                      + 0.5*(1.0/ul[0])*${pyfr.dot('ul[{i}]', i=(1, ndims + 1))};
 
     ur[${nvars - 2}] = ${c['ku']};
-    ur[${nvars - 1}] = ${c['eu']};
+    ur[${nvars - 1}] = ${c['wu']};
 
 </%pyfr:macro>
 

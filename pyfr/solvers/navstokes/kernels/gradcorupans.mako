@@ -8,7 +8,7 @@
               gradu='inout fpdtype_t[${str(ndims)}][${str(nvars)}]'
               u='in fpdtype_t[${str(nvars)}]'
               ku_src='inout fpdtype_t'
-              eu_src='inout fpdtype_t'
+              wu_src='inout fpdtype_t'
               t = 'scalar fpdtype_t'>
 
 
@@ -32,9 +32,9 @@ fpdtype_t rcprho = 1/u[0];
 fpdtype_t duk_dxj, duj_dxk;
 
 fpdtype_t ku = u[${nvars-2}];
-fpdtype_t eu = u[${nvars-1}];
+fpdtype_t wu = u[${nvars-1}];
 
-fpdtype_t mu_t = (${c['Cmu']}*ku*ku/eu < 0.0) ? 0.0 : ${c['Cmu']}*ku*ku/eu;
+fpdtype_t mu_t = (${c['Cmu']}*ku*ku/wu < 0.0) ? 0.0 : ${c['Cmu']}*ku*ku/wu;
 
 mu_t = (1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
 
@@ -82,10 +82,10 @@ fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 
 
 
-// Calculate ku and eu source terms
+// Calculate ku and wu source terms
 
-ku_src = ${c['tmswitch']}*(prod - eu);
-eu_src = ${c['tmswitch']}*(${c['fk']} * (${c['Ce1']}*prod*eu/ku_temp - Ce2s*(eu*eu)/ku_temp));
+ku_src = ${c['tmswitch']}*(prod - wu);
+wu_src = ${c['tmswitch']}*(${c['fk']} * (${c['Ce1']}*prod*wu/ku_temp - Ce2s*(wu*wu)/ku_temp));
 
 
 
