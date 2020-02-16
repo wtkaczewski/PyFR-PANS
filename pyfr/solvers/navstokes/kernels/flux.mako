@@ -33,7 +33,8 @@
 
     // Turbulence model variables and turbulent viscosity
     fpdtype_t ku = (uin[4] > ${c['min_ku']}) ? uin[4] : ${c['min_ku']};
-    fpdtype_t wu = (uin[5] > ${c['min_wu']}) ? uin[5] : ${c['min_wu']};
+    //fpdtype_t wu = (uin[5] > ${c['min_wu']}) ? uin[5] : ${c['min_wu']};
+    fpdtype_t wu = exp(uin[5]);
 
 	fpdtype_t mu_t = (rho*ku/wu < 0.0) ? 0.0 : rho*ku/wu;
 	mu_t = ${c['tmswitch']}*(1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
@@ -107,7 +108,8 @@
 % endif
 
     fpdtype_t ku = (uin[5] > ${c['min_ku']}) ? uin[5] : ${c['min_ku']};
-    fpdtype_t wu = (uin[6] > ${c['min_wu']}) ? uin[6] : ${c['min_wu']};
+    //fpdtype_t wu = (uin[5] > ${c['min_wu']}) ? uin[5] : ${c['min_wu']};
+    fpdtype_t wu = exp(uin[5]);
 
 	fpdtype_t mu_t = (rho*ku/wu < 0.0) ? 0.0 : rho*ku/wu;
 	mu_t = ${c['tmswitch']}*(1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;

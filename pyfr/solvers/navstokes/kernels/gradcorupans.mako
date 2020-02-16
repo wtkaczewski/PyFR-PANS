@@ -46,9 +46,10 @@ fpdtype_t rcprho = 1/u[0];
 fpdtype_t duk_dxj, duj_dxk;
 
 fpdtype_t ku = u[${nvars-2}];
-fpdtype_t wu = u[${nvars-1}];
+fpdtype_t wu = exp(u[${nvars-1}]);
 
 fpdtype_t mu_t = (rho*ku/wu < 0.0) ? 0.0 : rho*ku/wu;
+
 mu_t = ${c['tmswitch']}*(1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
 mu_t = (mu_t > ${c['mu']}*${c['max_mutrat']}) ? ${c['mu']}*${c['max_mutrat']} : mu_t;
 
@@ -61,7 +62,7 @@ fpdtype_t trc = 0.0;
 fpdtype_t dui_dxi;
 
 fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
-fpdtype_t wu_temp = (wu < ${c['min_wu']}) ? ${c['min_wu']} : wu;
+//fpdtype_t wu_temp = (wu < ${c['min_wu']}) ? ${c['min_wu']} : wu;
 
 % for i in range(ndims):
 	dui_dxi = rcprho*(gradu[${i}][${i+1}] - gradu[${i}][0]*u[${i+1}]); 
@@ -82,17 +83,17 @@ fpdtype_t wu_temp = (wu < ${c['min_wu']}) ? ${c['min_wu']} : wu;
 % endfor
 // END DEBUGGING CODE
 
-fpdtype_t prod_u = ${c['fk']}*prod + ${c['betastar']}*ku_temp*wu_temp*(1.0 - 1.0/${c['fw']});
+fpdtype_t prod_u = ${c['fk']}*prod + ${c['betastar']}*ku_temp*wu*(1.0 - 1.0/${c['fw']});
 
 
 
 // Calculate ku and wu source terms
 
-ku_src = ${c['tmswitch']}*(rho*prod_u - ${c['betastar']}*rho*ku_temp*wu_temp);
-wu_src = ${c['tmswitch']}*(${c['alpha']}*rho*prod_u*wu_temp/ku_temp - betaprime*wu_temp*wu_temp);
+ku_src = ${c['tmswitch']}*(rho*prod_u - ${c['betastar']}*rho*ku_temp*wu);
+wu_src = ${c['tmswitch']}*(${c['alpha']}*rho*prod_u*wu/ku_temp - betaprime*wu*wu);
 
 ku_src = (ku < ${c['min_ku']}) ? ${c['ku_limiter']} : ku_src;
-wu_src = (wu < ${c['min_wu']}) ? ${c['wu_limiter']} : wu_src;
+//wu_src = (wu < ${c['min_wu']}) ? ${c['wu_limiter']} : wu_src;
 
 
 // Get gradients for energy and turbulence model variables
