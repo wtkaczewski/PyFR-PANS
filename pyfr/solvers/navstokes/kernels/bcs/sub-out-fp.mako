@@ -9,8 +9,8 @@
     ur[${nvars - 3}] = ${c['p']}/${c['gamma'] - 1}
                      + 0.5*(1.0/ul[0])*${pyfr.dot('ul[{i}]', i=(1, ndims + 1))};
 
-    ur[${nvars - 2}] = ${c['ku']};
-    ur[${nvars - 1}] = ${c['wu']};
+    ur[${nvars - 2}] = ul[${nvars - 2}];
+    ur[${nvars - 1}] = ul[${nvars - 1}];
 
 </%pyfr:macro>
 
