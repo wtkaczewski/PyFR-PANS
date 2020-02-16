@@ -21,7 +21,7 @@
     ur[${nvars - 3}] = ul[${nvars - 3}]
                      - (0.5/ul[0])*${pyfr.dot('ul[{i}]', i=(1, ndims + 1))};
     ur[${nvars - 2}] = 0.0;
-    ur[${nvars - 1}] = ${c['wuWall']};
+    ur[${nvars - 1}] = log(${c['wuWall']});
 </%pyfr:macro>
 
 <%pyfr:macro name='bc_ldg_grad_state' params='ul, nl, grad_ul, grad_ur'>

@@ -21,7 +21,7 @@
     ur[${nvars - 3}] = ${c['cpTw']/c['gamma']}*ur[0]
                      + 0.5*(1.0/ur[0])*${pyfr.dot('ur[{i}]', i=(1, ndims + 1))};
     ur[${nvars - 2}] = 0.0;
-    ur[${nvars - 1}] = ${c['wuWall']};
+    ur[${nvars - 1}] = log(${c['wuWall']});
 </%pyfr:macro>
 
 <%pyfr:alias name='bc_ldg_grad_state' func='bc_common_grad_copy'/>
