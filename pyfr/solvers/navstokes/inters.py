@@ -209,4 +209,4 @@ class NavierStokesSubOutflowBCInters(NavierStokesBaseBCInters):
     def __init__(self, be, lhs, elemap, cfgsect, cfg):
         super().__init__(be, lhs, elemap, cfgsect, cfg)
 
-        self._tpl_c.update(self._exp_opts(['p'] + ['ku','wu'], lhs))
+        self._tpl_c.update(self._exp_opts(['p'], lhs))
