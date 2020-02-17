@@ -10,7 +10,7 @@
     ur[${nvars - 3}] = ul[${nvars - 3}];
     // Turbulence model BCs (zero gradient)
     ur[${nvars - 2}] = ul[${nvars - 2}];
-    ur[${nvars - 1}] = ul[${nvars - 1}];
+    ur[${nvars - 1}] = -ul[${nvars - 1}] + 2*log(${c['wuWall']})*ul[${nvars - 1}];
 </%pyfr:macro>
 
 <%pyfr:macro name='bc_ldg_state' params='ul, nl, ur, ploc, t'>
