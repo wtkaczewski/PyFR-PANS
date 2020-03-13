@@ -83,8 +83,8 @@ fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 % endfor
 // END DEBUGGING CODE
 
-fpdtype_t prod_u = ${c['fk']}*prod + ${c['betastar']}*ku_temp*wu*(1.0 - 1.0/${c['fw']});
-
+// fpdtype_t prod_u = ${c['fk']}*prod + ${c['betastar']}*ku_temp*wu*(1.0 - 1.0/${c['fw']});
+fpdtype_t prod_u = prod;
 
 
 // Calculate ku and wu source terms
