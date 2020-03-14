@@ -96,7 +96,7 @@ class NativeWriter(object):
         if re.search('{n[^}]*}', self.basename):
             # Quote and substitute
             bn = re.escape(self.basename)
-            bn = re.sub(r'\\{n[^}]*\\}', r'(\s*\d+\s*)', bn)
+            bn = re.sub(r'\\{n[^}]*\\}', r'(\\s*\\d+\\s*)', bn)
             bn = re.sub(r'\\{t[^}]*\\}', r'(?:.*?)', bn) + '$'
 
             for f in os.listdir(self.basedir):
@@ -154,8 +154,6 @@ class NativeWriter(object):
         comm.barrier()
 
     def _write_serial(self, path, data, metadata):
-        from mpi4py import MPI
-
         comm, rank, root = get_comm_rank_root()
 
         if rank != root:
