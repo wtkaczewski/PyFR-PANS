@@ -188,6 +188,7 @@ class VTKWriter(BaseWriter):
         name, extn = os.path.splitext(self.outf)
         parallel = extn == '.pvtu'
 
+        self._write_boundary_data(self.outf)
 
         parts = defaultdict(list)
         for mk, sk in zip(self.mesh_inf, self.soln_inf):
@@ -237,8 +238,7 @@ class VTKWriter(BaseWriter):
                                   .format(os.path.basename(pfn)))
 
                 write_s_to_fh('</PUnstructuredGrid>\n</VTKFile>\n')
-        
-        self._write_boundary_data(self.outf)
+
 
     def _write_darray(self, array, vtuf, dtype):
         array = array.astype(dtype)
@@ -377,6 +377,8 @@ class VTKWriter(BaseWriter):
 
             for etype, eidx, fidx, flags in self.mesh[bc].astype('U4,i4,i1,i1'):
                 print(self.systemscls.__dict__)
+                print(self.systemscls.elementscls.__dict__)
+                print(self.elementscls.__dict__)
                 #eles = self.elementscls(basiscls, mesh, self.cfg)
                 #eles = self.elementscls.ele_map[etype]
                 eles = self.elementscls
