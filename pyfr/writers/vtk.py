@@ -371,9 +371,6 @@ class VTKWriter(BaseWriter):
 
         basiscls = subclass_where(BaseShape, name='hex')
 
-        # Construct an instance of the relevant elements class
-        eles = self.elementscls(basiscls, self.mesh_inf, self.cfg)
-
         if bc in self.mesh:
             print(bc)
             # Element indices and associated face normals
@@ -381,12 +378,7 @@ class VTKWriter(BaseWriter):
             norms = defaultdict(list)
 
             for etype, eidx, fidx, flags in self.mesh[bc].astype('U4,i4,i1,i1'):
-                print(self.systemscls.__dict__)
-                print(self.systemscls.elementscls.__dict__)
-                print(self.elementscls.__dict__)
-                #eles = self.elementscls(basiscls, mesh, self.cfg)
-                #eles = self.elementscls.ele_map[etype]
-                eles = self.elementscls
+                eles = basiscls
 
                 if (etype, fidx) not in m0:
                     facefpts = eles.basis.facefpts[fidx]
