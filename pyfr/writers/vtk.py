@@ -188,6 +188,8 @@ class VTKWriter(BaseWriter):
         name, extn = os.path.splitext(self.outf)
         parallel = extn == '.pvtu'
 
+        self._write_boundary_data(self.outf)
+
         parts = defaultdict(list)
         for mk, sk in zip(self.mesh_inf, self.soln_inf):
             prt = mk.split('_')[-1]
