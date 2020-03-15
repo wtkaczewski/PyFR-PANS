@@ -41,5 +41,5 @@ class BaseWriter(object):
             BaseSystem, name=self.cfg.get('solver', 'system')
         )
         self.elementscls = self.systemscls.elementscls
-        self.elemap = subclass_where(BaseSystem, 
+        self.elemap = subclass_where(BaseIntegrator, 
             name='system.ele_map' )
