@@ -362,6 +362,7 @@ class VTKWriter(BaseWriter):
 
         self._m0 = m0 = {}
         self._qwts = qwts = defaultdict(list)
+        self._viscous = True
 
         if self._viscous:
             self._m4 = m4 = {}
