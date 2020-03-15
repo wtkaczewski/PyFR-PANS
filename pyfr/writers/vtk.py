@@ -365,7 +365,7 @@ class VTKWriter(BaseWriter):
             norms = defaultdict(list)
 
             for etype, eidx, fidx, flags in self.mesh[bc].astype('U4,i4,i1,i1'):
-                eles = self..ele_map[etype]
+                eles = self.ele_map[etype]
 
                 if (etype, fidx) not in m0:
                     facefpts = eles.basis.facefpts[fidx]
