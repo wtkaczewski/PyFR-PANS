@@ -381,13 +381,13 @@ class VTKWriter(BaseWriter):
                 eles = basiscls
 
                 if (etype, fidx) not in m0:
-                    facefpts = eles.basis.facefpts[fidx]
+                    facefpts = eles.facefpts[fidx]
 
-                    m0[etype, fidx] = eles.basis.m0[facefpts]
-                    qwts[etype, fidx] = eles.basis.fpts_wts[facefpts]
+                    m0[etype, fidx] = eles.m0[facefpts]
+                    qwts[etype, fidx] = eles.fpts_wts[facefpts]
 
                 if self._viscous and etype not in m4:
-                    m4[etype] = eles.basis.m4
+                    m4[etype] = eles.m4
 
                     # Get the smats at the solution points
                     smat = eles.smat_at_np('upts').transpose(2, 0, 1, 3)
