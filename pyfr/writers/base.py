@@ -8,6 +8,7 @@ from pyfr.util import subclass_where
 class BaseWriter(object):
     def __init__(self, args):
         from pyfr.solvers.base import BaseSystem
+        from pyfr.integrators.base import BaseIntegrator
 
         self.outf = args.outf
 
@@ -40,3 +41,5 @@ class BaseWriter(object):
             BaseSystem, name=self.cfg.get('solver', 'system')
         )
         self.elementscls = self.systemscls.elementscls
+        self.elemap = subclass_where(BaseSystem, 
+            name='system.ele_map' )
