@@ -360,6 +360,18 @@ class VTKWriter(BaseWriter):
         rank = 0
         bc = 'bcon_{0}_p{1}'.format(suffix, rank)
 
+        mk = 1
+        sk = 1
+        name = self.mesh_inf[mk][0]
+        mesh = self.mesh[mk].astype(self.dtype)
+        soln = self.soln[sk].swapaxes(0, 1).astype(self.dtype)
+
+        # Get the shape class
+        basiscls = subclass_where(BaseShape, name=name)
+
+        # Construct an instance of the relevant elements class
+        eles = self.elementscls(basiscls, mesh, self.cfg)
+
         self._m0 = m0 = {}
         self._qwts = qwts = defaultdict(list)
         self._viscous = True
