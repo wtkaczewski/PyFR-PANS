@@ -360,8 +360,8 @@ class VTKWriter(BaseWriter):
         rank = 0
         bc = 'bcon_{0}_p{1}'.format(suffix, rank)
 
-        mk = 1
-        sk = 1
+        mk = 0
+        sk = 0
         name = self.mesh_inf[mk][0]
         mesh = self.mesh[mk].astype(self.dtype)
         soln = self.soln[sk].swapaxes(0, 1).astype(self.dtype)
