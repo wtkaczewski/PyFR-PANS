@@ -353,6 +353,52 @@ class VTKWriter(BaseWriter):
         for arr in self._post_proc_fields(vsoln):
             self._write_darray(arr.T, vtuf, self.dtype)
 
+    def _write_boundary_data(self, vtubf):
+        suffix = 'wall'
+        rank = 0
+        bc = 'bcon_{0}_p{1}'.format(suffix, rank)
+
+        if bc in self.mesh:
+            print(bc)
+            # Element indices and associated face normals
+            eidxs = defaultdict(list)
+            norms = defaultdict(list)
+
+            for etype, eidx, fidx, flags in self.mesh[bc].astype('U4,i4,i1,i1'):
+                eles = self..ele_map[etype]
+
+                if (etype, fidx) not in m0:
+                    facefpts = eles.basis.facefpts[fidx]
+
+                    m0[etype, fidx] = eles.basis.m0[facefpts]
+                    qwts[etype, fidx] = eles.basis.fpts_wts[facefpts]
+
+                if self._viscous and etype not in m4:
+                    m4[etype] = eles.basis.m4
+
+                    # Get the smats at the solution points
+                    smat = eles.smat_at_np('upts').transpose(2, 0, 1, 3)
+
+                    # Get |J|^-1 at the solution points
+                    rcpdjac = eles.rcpdjac_at_np('upts')
+
+                    # Product to give J^-T at the solution points
+                    rcpjact[etype] = smat*rcpdjac
+
+                # Unit physical normals and their magnitudes (including |J|)
+                npn = eles.get_norm_pnorms(eidx, fidx)
+                mpn = eles.get_mag_pnorms(eidx, fidx)
+
+                eidxs[etype, fidx].append(eidx)
+                norms[etype, fidx].append(mpn[:, None]*npn)
+
+            self._eidxs = {k: np.array(v) for k, v in eidxs.items()}
+            self._norms = {k: np.array(v) for k, v in norms.items()}
+
+            if self._viscous:
+                self._rcpjact = {k: rcpjact[k[0]][..., v]
+                                 for k, v in self._eidxs.items()}
+
 
 class BaseShapeSubDiv(object):
     vtk_types = dict(tri=5, quad=9, tet=10, pyr=14, pri=13, hex=12)
