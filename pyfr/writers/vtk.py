@@ -360,6 +360,13 @@ class VTKWriter(BaseWriter):
         rank = 0
         bc = 'bcon_{0}_p{1}'.format(suffix, rank)
 
+        self._m0 = m0 = {}
+        self._qwts = qwts = defaultdict(list)
+
+        if self._viscous:
+            self._m4 = m4 = {}
+            rcpjact = {}
+
         if bc in self.mesh:
             print(bc)
             # Element indices and associated face normals
