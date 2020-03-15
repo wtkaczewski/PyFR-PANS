@@ -367,7 +367,7 @@ class VTKWriter(BaseWriter):
             norms = defaultdict(list)
 
             for etype, eidx, fidx, flags in self.mesh[bc].astype('U4,i4,i1,i1'):
-                print(self.elementscls.__dict__)
+                print(self.systemscls.__dict__)
                 eles = self.elementscls.ele_map[etype]
 
                 if (etype, fidx) not in m0:
