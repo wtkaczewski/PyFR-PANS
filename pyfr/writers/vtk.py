@@ -188,7 +188,6 @@ class VTKWriter(BaseWriter):
         name, extn = os.path.splitext(self.outf)
         parallel = extn == '.pvtu'
 
-        self._write_boundary_data(self.outf)
 
         parts = defaultdict(list)
         for mk, sk in zip(self.mesh_inf, self.soln_inf):
@@ -238,6 +237,8 @@ class VTKWriter(BaseWriter):
                                   .format(os.path.basename(pfn)))
 
                 write_s_to_fh('</PUnstructuredGrid>\n</VTKFile>\n')
+        
+        self._write_boundary_data(self.outf)
 
     def _write_darray(self, array, vtuf, dtype):
         array = array.astype(dtype)
@@ -359,18 +360,6 @@ class VTKWriter(BaseWriter):
         suffix = 'wall'
         rank = 0
         bc = 'bcon_{0}_p{1}'.format(suffix, rank)
-
-        mk = 0
-        sk = 0
-        name = self.mesh_inf[mk][0]
-        mesh = self.mesh[mk].astype(self.dtype)
-        soln = self.soln[sk].swapaxes(0, 1).astype(self.dtype)
-
-        # Get the shape class
-        basiscls = subclass_where(BaseShape, name=name)
-
-        # Construct an instance of the relevant elements class
-        eles = self.elementscls(basiscls, mesh, self.cfg)
 
         self._m0 = m0 = {}
         self._qwts = qwts = defaultdict(list)
