@@ -372,7 +372,7 @@ class VTKWriter(BaseWriter):
         basiscls = subclass_where(BaseShape, name='hex')
 
         # Construct an instance of the relevant elements class
-        eles = self.elementscls(basiscls, self.mesh, self.cfg)
+        eles = self.elementscls(basiscls, self.mesh_inf, self.cfg)
 
         if bc in self.mesh:
             print(bc)
