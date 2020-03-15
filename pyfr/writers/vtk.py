@@ -369,6 +369,11 @@ class VTKWriter(BaseWriter):
             self._m4 = m4 = {}
             rcpjact = {}
 
+        basiscls = subclass_where(BaseShape, name='hex')
+
+        # Construct an instance of the relevant elements class
+        eles = self.elementscls(basiscls, self.mesh, self.cfg)
+
         if bc in self.mesh:
             print(bc)
             # Element indices and associated face normals
