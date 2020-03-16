@@ -9,7 +9,8 @@
               u='in fpdtype_t[${str(nvars)}]'
               ku_src='inout fpdtype_t'
               wu_src='inout fpdtype_t'
-              t = 'scalar fpdtype_t'>
+              t = 'scalar fpdtype_t'
+              ploc = 'in fpdtype_t[${str(ndims)}]'>
 
 
 fpdtype_t tmpgradu[${ndims}];
@@ -38,7 +39,7 @@ fpdtype_t tmpgradu[${ndims}];
 
 % endfor
 
-// Get velocity gradients and TKE production term
+// Setup variables
 
 fpdtype_t prod = 0.0;
 fpdtype_t rho = u[0];
@@ -55,18 +56,24 @@ mu_t = (mu_t > ${c['mu']}*${c['max_mutrat']}) ? ${c['mu']}*${c['max_mutrat']} : 
 
 fpdtype_t betaprime = ${c['alpha']}*${c['betastar']} - ${c['alpha']}*${c['betastar']}/${c['fw']} + ${c['beta']}/${c['fw']} ;
 
-// DEBUGGING CODE
+
+// Multiplying by sig_w2u instead of dividing so fw/fk not fk/fw
+fpdtype_t sig_w2u = ${c['sig_w2']}*${c['fw']/c['fk']};
+
+// Get production term
 fpdtype_t Sjk = 0.0;
 fpdtype_t Tjk = 0.0;
-fpdtype_t trc = 0.0;
-fpdtype_t dui_dxi;
+fpdtype_t dui_dxi = 0.0;
+fpdtype_t dk_dx, dw_dx;
+fpdtype_t dkdw_dxi = 0.0;
 
 fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
-//fpdtype_t wu_temp = (wu < ${c['min_wu']}) ? ${c['min_wu']} : wu;
 
 % for i in range(ndims):
-	dui_dxi = rcprho*(gradu[${i}][${i+1}] - gradu[${i}][0]*u[${i+1}]); 
-	trc += dui_dxi;
+	dui_dxi += rcprho*(gradu[${i}][${i+1}] - gradu[${i}][0]*u[${i+1}]); 
+	dk_dx = rcprho*(gradu[${i}][${nvars-2}] - gradu[${i}][0]*u[${nvars-2}]); 
+	dw_dx = rcprho*(gradu[${i}][${nvars-1}] - gradu[${i}][0]*u[${nvars-1}]); 
+	dkdw_dxi += dk_dx*dw_dx;
 % endfor
 
 % for j,k in pyfr.ndrange(ndims,ndims):
@@ -75,24 +82,39 @@ fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 
 	Sjk = 0.5*(duk_dxj + duj_dxk);
 	% if (j == k):
-		Tjk = rcprho*mu_t*(2*Sjk - ${2.0/3.0}*trc) - ${2.0/3.0}*ku_temp;
+		Tjk = mu_t*(2*Sjk - ${2.0/3.0}*dui_dxi) - ${2.0/3.0}*rho*ku_temp;
 	% else:
-		Tjk = rcprho*mu_t*(2*Sjk);
+		Tjk = mu_t*(2*Sjk);
 	% endif
 	prod += duj_dxk*Tjk; // CHECK THESIS?
 % endfor
-// END DEBUGGING CODE
 
+
+// Production limiter (Menter, F. R., AIAA Paper 93-2906, July 1993)
+// prod = min(prod, 20*${c['betastar']}*rho*wu*ku_temp);
+
+// Convert to unresolved production
 fpdtype_t prod_u = ${c['fk']}*prod + ${c['betastar']}*ku_temp*wu*(1.0 - 1.0/${c['fw']});
 
 
+
+// Calculate damping term
+fpdtype_t CDkw = max(2*rho*sig_w2u*dkdw_dxi/wu, pow(10.0,-10));
+
+// d = sqrt(x**2 + y**2) - 0.5 for cylinder of diameter 1
+fpdtype_t d = pow(pow(ploc[0], 2) + pow(ploc[1], 2), 0.5) - 0.5;
+
+fpdtype_t g1 = max(pow(ku_temp, 0.5)/(${c['betastar']}*wu*d), 500*${c['mu']}/(d*d*rho*wu));
+fpdtype_t g2 = min(g1, 4*rho*sig_w2u*ku_temp/(CDkw*d*d));
+fpdtype_t g3 = pow(g2, 4);
+fpdtype_t F1 = tanh(g3);
+
 // Calculate ku and wu source terms
 
-ku_src = ${c['tmswitch']}*(rho*prod_u - ${c['betastar']}*rho*ku_temp*wu);
-wu_src = ${c['tmswitch']}*(${c['alpha']}*rho*prod_u*wu/ku_temp - betaprime*wu*wu);
+ku_src = ${c['tmswitch']}*(prod_u - ${c['betastar']}*rho*ku_temp*wu);
+wu_src = ${c['tmswitch']}*(${c['alpha']}*prod_u*ku_temp/wu - rho*betaprime*wu*wu) + 2*(1-F1)*(rho*sig_w2u/wu)*dkdw_dxi;
 
 ku_src = (ku < ${c['min_ku']}) ? ${c['ku_limiter']} : ku_src;
-//wu_src = (wu < ${c['min_wu']}) ? ${c['wu_limiter']} : wu_src;
 
 
 // Get gradients for energy and turbulence model variables

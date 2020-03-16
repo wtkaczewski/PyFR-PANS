@@ -71,7 +71,8 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
             'gradcorupans', tplargs=srctplargs,
              dims=[self.nupts, self.neles], smats=self.smat_at('upts'),
              rcpdjac=self.rcpdjac_at('upts'), gradu=self._vect_upts,
-             u=self.scal_upts_inb, ku_src=self.ku_src, wu_src=self.wu_src
+             u=self.scal_upts_inb, ku_src=self.ku_src, wu_src=self.wu_src,
+             ploc=self.ploc_at('upts')
         )
 
         # ----- NEGDIVCONF KERNELS -----
