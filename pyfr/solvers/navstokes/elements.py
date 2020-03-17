@@ -35,27 +35,32 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
                        shock_capturing=shock_capturing, visc_corr=visc_corr,
                        c=self.cfg.items_as('constants', float))
 
+        # ----- NEW KERNELS FOR PANS -----
+        
+        backend.pointwise.register('pyfr.solvers.navstokes.kernels.negdivconfpans')
+        backend.pointwise.register('pyfr.solvers.navstokes.kernels.gradcorupans')
+        
+        self.ku_src = self._be.matrix((self.nupts, self.neles), tags={'align'})
+        self.wu_src = self._be.matrix((self.nupts, self.neles), tags={'align'})
+        self.F1     = self._be.matrix((self.nupts, self.neles), tags={'align'}, extent= nonce + 'F1')
+
         if 'flux' in self.antialias:
             self.kernels['tdisf'] = lambda: backend.kernel(
                 'tflux', tplargs=tplargs, dims=[self.nqpts, self.neles],
                 u=self._scal_qpts, smats=self.smat_at('qpts'),
-                f=self._vect_qpts, artvisc=self.artvisc
+                f=self._vect_qpts, artvisc=self.artvisc,
+                F1=self.F1
             )
         else:
             self.kernels['tdisf'] = lambda: backend.kernel(
                 'tflux', tplargs=tplargs, dims=[self.nupts, self.neles],
                 u=self.scal_upts_inb, smats=self.smat_at('upts'),
-                f=self._vect_upts, artvisc=self.artvisc
+                f=self._vect_upts, artvisc=self.artvisc,
+                F1=self.F1
             )
 
 
-        # ----- NEW KERNELS FOR PANS -----
-        
-        backend.pointwise.register('pyfr.solvers.navstokes.kernels.negdivconfpans')
-        backend.pointwise.register('pyfr.solvers.navstokes.kernels.gradcorupans')
 
-        self.ku_src = self._be.matrix((self.nupts, self.neles), tags={'align'})
-        self.wu_src = self._be.matrix((self.nupts, self.neles), tags={'align'})
 
         srctplargs = {
             'ndims':    self.ndims,
@@ -72,7 +77,7 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
              dims=[self.nupts, self.neles], smats=self.smat_at('upts'),
              rcpdjac=self.rcpdjac_at('upts'), gradu=self._vect_upts,
              u=self.scal_upts_inb, ku_src=self.ku_src, wu_src=self.wu_src,
-             ploc=self.ploc_at('upts')
+             ploc=self.ploc_at('upts'), F1=self.F1
         )
 
         # ----- NEGDIVCONF KERNELS -----
@@ -107,4 +112,11 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
             )
 
 
+    def get_F1_fpts_for_inter(self, eidx, fidx):
+        nfp = self.nfacefpts[fidx]
+
+        rmap = self._srtd_face_fpts[fidx][eidx]
+        cmap = (eidx,)*nfp
+
+        return (self.F1.mid,)*nfp, rmap, cmap
 
