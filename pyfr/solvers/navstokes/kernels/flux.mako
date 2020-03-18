@@ -59,8 +59,8 @@
     fpdtype_t ku_x = grad_uin[0][4];    fpdtype_t ku_y = grad_uin[1][4];
     fpdtype_t wu_x = grad_uin[0][5];    fpdtype_t wu_y = grad_uin[1][5];
 
-    fpdtype_t sig_ku = ${c['fk']/c['fw']}*(F1*${c['sig_k1']} + (1-F1)*${c['sig_k2']});
-    fpdtype_t sig_wu = ${c['fk']/c['fw']}*(F1*${c['sig_w1']} + (1-F1)*${c['sig_w2']});
+    fpdtype_t sig_ku = ${c['fw']/c['fk']}*(F1*${c['sig_k1']} + (1-F1)*${c['sig_k2']});
+    fpdtype_t sig_wu = ${c['fw']/c['fk']}*(F1*${c['sig_w1']} + (1-F1)*${c['sig_w2']});
 
     fout[0][4] += -rcprho*(mu_c + sig_ku*mu_t)*ku_x;     fout[1][4] += -rcprho*(mu_c + sig_ku*mu_t)*ku_y; 
     fout[0][5] += -rcprho*(mu_c + sig_wu*mu_t)*wu_x;     fout[1][5] += -rcprho*(mu_c + sig_wu*mu_t)*wu_y; 
@@ -139,8 +139,8 @@
     fpdtype_t ku_x = grad_uin[0][5];    fpdtype_t ku_y = grad_uin[1][5];    fpdtype_t ku_z = grad_uin[2][5];
     fpdtype_t wu_x = grad_uin[0][6];    fpdtype_t wu_y = grad_uin[1][6];    fpdtype_t wu_z = grad_uin[2][6];
 
-    fpdtype_t sig_ku = ${c['fk']/c['fw']}*(F1*${c['sig_k1']} + (1-F1)*${c['sig_k2']});
-    fpdtype_t sig_wu = ${c['fk']/c['fw']}*(F1*${c['sig_w1']} + (1-F1)*${c['sig_w2']});
+    fpdtype_t sig_ku = ${c['fw']/c['fk']}*(F1*${c['sig_k1']} + (1-F1)*${c['sig_k2']});
+    fpdtype_t sig_wu = ${c['fw']/c['fk']}*(F1*${c['sig_w1']} + (1-F1)*${c['sig_w2']});
 
     fout[0][5] += -rcprho*(mu_c + sig_ku*mu_t)*ku_x;     fout[1][5] += -rcprho*(mu_c + sig_ku*mu_t)*ku_y;     fout[2][5] += -rcprho*(mu_c + sig_ku*mu_t)*ku_z; 
     fout[0][6] += -rcprho*(mu_c + sig_wu*mu_t)*wu_x;     fout[1][6] += -rcprho*(mu_c + sig_wu*mu_t)*wu_y;     fout[2][6] += -rcprho*(mu_c + sig_wu*mu_t)*wu_z; 
