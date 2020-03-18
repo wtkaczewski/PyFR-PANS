@@ -91,7 +91,7 @@ fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 fpdtype_t sig_w2u = ${c['sig_w2']}*${c['fw']/c['fk']};
 
 // Production limiter (Menter, F. R., AIAA Paper 93-2906, July 1993)
-prod = min(prod, 20*${c['betastar']}*rho*wu*ku_temp);
+//prod = min(prod, 20*${c['betastar']}*rho*wu*ku_temp);
 
 // Convert to unresolved production
 fpdtype_t prod_u = ${c['fk']}*prod + ${c['betastar']}*ku_temp*wu*(1.0 - 1.0/${c['fw']});
