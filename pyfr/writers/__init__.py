@@ -2,6 +2,7 @@
 
 from pyfr.writers.base import BaseWriter
 from pyfr.writers.vtk import VTKWriter
+from pyfr.writers.tec import TECWriter
 
 from pyfr.util import subclasses, subclass_where
 
