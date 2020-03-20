@@ -118,7 +118,7 @@ fpdtype_t betaprime = alpha*${c['betastar']} - alpha*${c['betastar']}/${c['fw']}
 // Calculate ku and wu source terms
 
 ku_src = ${c['tmswitch']}*(prod_u - ${c['betastar']}*rho*ku_temp*wu);
-wu_src = ${c['tmswitch']}*(alpha*prod_u*ku_temp/wu - rho*betaprime*wu*wu) + 2*(1-F1)*(rho*sig_w2u/wu)*dkdw_dxi;
+wu_src = ${c['tmswitch']}*(alpha*prod_u*wu/ku_temp - rho*betaprime*wu*wu) + 2*(1-F1)*(rho*sig_w2u/wu)*dkdw_dxi;
 
 ku_src = (ku < ${c['min_ku']}) ? ${c['ku_limiter']} : ku_src;
 
