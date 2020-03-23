@@ -29,24 +29,35 @@ class BaseFluidElements(object):
 
 
     @staticmethod
-    def pri_to_con(pris, cfg):
-        rho, p = pris[0], pris[-5]
-        ku, wu = pris[-4], pris[-3]
-        F1, fk = pris[-2], pris[-1]
+    def pri_to_con(pris, cfg, addvars=False):
+        if addvars:
+            rho, p = pris[0], pris[-5]
+            ku, wu = pris[-4], pris[-3]
+            F1, fk = pris[-2], pris[-1]
 
-        # Multiply velocity components by rho
-        rhovs = [rho*c for c in pris[1:-5]]
+            # Multiply velocity components by rho
+            rhovs = [rho*c for c in pris[1:-5]]
 
-        # Compute the energy
-        gamma = cfg.getfloat('constants', 'gamma')
-        E = p/(gamma - 1) + 0.5*rho*sum(c*c for c in pris[1:-5])
+            # Compute the energy
+            gamma = cfg.getfloat('constants', 'gamma')
+            E = p/(gamma - 1) + 0.5*rho*sum(c*c for c in pris[1:-5])
 
-        return [rho] + rhovs + [E] + [ku,wu] + [F1, fk]
+            return [rho] + rhovs + [E] + [ku,wu] + [F1, fk]
+        else:
+            rho, p = pris[0], pris[-3]
+            ku, wu = pris[-2], pris[-1]
 
+            # Multiply velocity components by rho
+            rhovs = [rho*c for c in pris[1:-3]]
+
+            # Compute the energy
+            gamma = cfg.getfloat('constants', 'gamma')
+            E = p/(gamma - 1) + 0.5*rho*sum(c*c for c in pris[1:-3])
+
+            return [rho] + rhovs + [E] + [ku,wu]
     @staticmethod
-    def con_to_pri(cons, cfg):
-        nvar = len(cons)
-        if nvar > 7:
+    def con_to_pri(cons, cfg, addvars=False):
+        if addvars:
             rho, E = cons[0],  cons[-5]
             ku, wu = cons[-4], cons[-3]
             F1, fk = cons[-2], cons[-1]

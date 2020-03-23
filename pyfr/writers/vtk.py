@@ -61,7 +61,7 @@ class VTKWriter(BaseWriter):
 
     def _pre_proc_fields_soln(self, name, mesh, soln):
         # Convert from conservative to primitive variables
-        return np.array(self.elementscls.con_to_pri(soln, self.cfg))
+        return np.array(self.elementscls.con_to_pri(soln, self.cfg, addvars=True))
 
     def _pre_proc_fields_scal(self, name, mesh, soln):
         return soln
