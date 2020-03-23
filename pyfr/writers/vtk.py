@@ -20,9 +20,7 @@ class VTKWriter(BaseWriter):
         super().__init__(args)     
         self.privarmap = self.elementscls.privarmap[self.ndims] + ['F1', 'fk']
         self.visvarmap = self.elementscls.visvarmap[self.ndims] + [('F1', ['F1']), ('fk', ['fk'])]
-        print(self.elementscls.visvarmap[self.ndims])
-        print(self.visvarmap )
-
+        
         self.dtype = np.dtype(args.precision).type
         self.divisor = args.divisor or self.cfg.getint('solver', 'order')
 
