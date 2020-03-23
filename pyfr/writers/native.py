@@ -35,7 +35,7 @@ class NativeWriter(object):
 
         # Get the type and shape of each element in the partition
         etypes = intg.system.ele_types
-        shapes = [(nupts, nvars, neles)
+        shapes = [(nupts, nvars+2, neles)
                   for nupts, _, neles in intg.system.ele_shapes]
 
         # Gather
