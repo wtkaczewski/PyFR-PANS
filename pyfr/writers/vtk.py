@@ -17,7 +17,11 @@ class VTKWriter(BaseWriter):
     extn = ['.vtu', '.pvtu']
 
     def __init__(self, args):
-        super().__init__(args)
+        super().__init__(args)     
+        self.privarmap = self.elementscls.privarmap[self.ndims] + ['F1', 'fk']
+        self.visvarmap = self.elementscls.visvarmap[self.ndims] + [('F1', ['F1']), ('fk', ['fk'])]
+        print(self.elementscls.visvarmap[self.ndims])
+        print(self.visvarmap )
 
         self.dtype = np.dtype(args.precision).type
         self.divisor = args.divisor or self.cfg.getint('solver', 'order')
@@ -26,8 +30,8 @@ class VTKWriter(BaseWriter):
         if self.dataprefix == 'soln':
             self._pre_proc_fields = self._pre_proc_fields_soln
             self._post_proc_fields = self._post_proc_fields_soln
-            self._soln_fields = list(self.elementscls.privarmap[self.ndims])
-            self._vtk_vars = list(self.elementscls.visvarmap[self.ndims])
+            self._soln_fields = list(self.privarmap)
+            self._vtk_vars = list(self.visvarmap)
         # Otherwise we're dealing with simple scalar data
         else:
             self._pre_proc_fields = self._pre_proc_fields_scal
@@ -65,14 +69,11 @@ class VTKWriter(BaseWriter):
         return soln
 
     def _post_proc_fields_soln(self, vsoln):
-        # Primitive and visualisation variable maps
-        privarmap = self.elementscls.privarmap[self.ndims]
-        visvarmap = self.elementscls.visvarmap[self.ndims]
-
         # Prepare the fields
         fields = []
-        for fnames, vnames in visvarmap:
-            ix = [privarmap.index(vn) for vn in vnames]
+        for fnames, vnames in self.visvarmap:
+            print(fnames, vnames, self.privarmap)
+            ix = [self.privarmap.index(vn) for vn in vnames]
 
             fields.append(vsoln[ix])
 
