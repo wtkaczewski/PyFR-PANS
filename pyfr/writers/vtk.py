@@ -20,7 +20,7 @@ class VTKWriter(BaseWriter):
         super().__init__(args)     
         self.privarmap = self.elementscls.privarmap[self.ndims] + ['F1', 'fk']
         self.visvarmap = self.elementscls.visvarmap[self.ndims] + [('F1', ['F1']), ('fk', ['fk'])]
-        
+
         self.dtype = np.dtype(args.precision).type
         self.divisor = args.divisor or self.cfg.getint('solver', 'order')
 
@@ -70,7 +70,6 @@ class VTKWriter(BaseWriter):
         # Prepare the fields
         fields = []
         for fnames, vnames in self.visvarmap:
-            print(fnames, vnames, self.privarmap)
             ix = [self.privarmap.index(vn) for vn in vnames]
 
             fields.append(vsoln[ix])
