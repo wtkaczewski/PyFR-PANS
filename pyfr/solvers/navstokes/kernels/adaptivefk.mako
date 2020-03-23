@@ -34,6 +34,7 @@ fpdtype_t wu = 0;
 
 // Calculate minimum turbulent length scale = (nu^3/epsilon)^(1/4) = (nu^3/(betastar*k*w))^(1/4)
 fpdtype_t dx_max = 1/pow(8.0*djac, 0.33); // 8.0 since base element is 2.0^3 volume
+dx_max = dx_max/(${order + 1}); // Divide by order+1 to account for increased resolving power at higher-order
 fpdtype_t l_min = pow(((pow(${c['mu']}/rho, 3))/(${c['betastar']}*k_res*wu)), 0.25);
 
 // Calculate variable fk and assume fw = 1/fk
