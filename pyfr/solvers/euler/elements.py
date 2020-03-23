@@ -63,16 +63,21 @@ class BaseFluidElements(object):
             F1, fk = cons[-2], cons[-1]
             # Divide momentum components by rho
             vs = [rhov/rho for rhov in cons[1:-5]]
+            # Compute the pressure
+            gamma = cfg.getfloat('constants', 'gamma')
+            p = (gamma - 1)*(E - 0.5*rho*sum(v*v for v in vs))
+            return [rho] + vs + [p] + [ku,wu] + [F1, fk]
         else:
             rho, E = cons[0],  cons[-3]
             ku, wu = cons[-2], cons[-1]
             # Divide momentum components by rho
             vs = [rhov/rho for rhov in cons[1:-3]]
+            # Compute the pressure
+            gamma = cfg.getfloat('constants', 'gamma')
+            p = (gamma - 1)*(E - 0.5*rho*sum(v*v for v in vs))
+            return [rho] + vs + [p] + [ku,wu]
 
-        # Compute the pressure
-        gamma = cfg.getfloat('constants', 'gamma')
-        p = (gamma - 1)*(E - 0.5*rho*sum(v*v for v in vs))
-        return [rho] + vs + [p] + [ku,wu] + [F1, fk]
+
 
 
 
