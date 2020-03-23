@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import numpy as np
 
 from pyfr.solvers.baseadvecdiff import BaseAdvectionDiffusionElements
 from pyfr.solvers.euler.elements import BaseFluidElements
@@ -38,35 +39,56 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
         # ----- NEW KERNELS FOR PANS -----
         
         backend.pointwise.register('pyfr.solvers.navstokes.kernels.negdivconfpans')
-        backend.pointwise.register('pyfr.solvers.navstokes.kernels.gradcorupans')
+        backend.pointwise.register('pyfr.solvers.navstokes.kernels.gradcorupans')            
+        backend.pointwise.register('pyfr.solvers.navstokes.kernels.adaptivefk')
+        
         
         self.ku_src = self._be.matrix((self.nupts, self.neles), tags={'align'})
         self.wu_src = self._be.matrix((self.nupts, self.neles), tags={'align'})
         self.F1     = self._be.matrix((self.nupts, self.neles), tags={'align'}, extent= nonce + 'F1')
+        #fk_ini = self.cfg.items_as('constants', float)['min_fk']
+        #self.fk     = self._be.matrix((1, self.neles), tags={'align'}, extent= nonce + 'fk', initval=np.full((1, self.neles), fk_ini))
+        self.fk     = self._be.matrix((1, self.neles), tags={'align'}, extent= nonce + 'fk')
+
+        ubdegs = [sum(dd) for dd in self.basis.ubasis.degrees]
+
+        # Template arguments
+        tplargs = dict(
+            nvars=self.nvars, nupts=self.nupts, ndims=self.ndims,
+            c=self.cfg.items_as('constants', float),
+            order=self.basis.order, ubdegs=ubdegs,
+            invvdm=self.basis.ubasis.invvdm.T
+        )
+
+        # Apply the sensor to estimate the required artificial viscosity
+        self.kernels['adaptivefk'] = lambda: backend.kernel(
+            'adaptivefk', tplargs=tplargs, dims=[self.neles],
+            u=self.scal_upts_inb, fk=self.fk,
+            rcpdjac=self.rcpdjac_at('upts')
+        )
+
 
         if 'flux' in self.antialias:
             self.kernels['tdisf'] = lambda: backend.kernel(
                 'tflux', tplargs=tplargs, dims=[self.nqpts, self.neles],
                 u=self._scal_qpts, smats=self.smat_at('qpts'),
                 f=self._vect_qpts, artvisc=self.artvisc,
-                F1=self.F1
+                F1=self.F1, fk=self.fk
             )
         else:
             self.kernels['tdisf'] = lambda: backend.kernel(
                 'tflux', tplargs=tplargs, dims=[self.nupts, self.neles],
                 u=self.scal_upts_inb, smats=self.smat_at('upts'),
                 f=self._vect_upts, artvisc=self.artvisc,
-                F1=self.F1
+                F1=self.F1, fk=self.fk
             )
 
 
-
-
         srctplargs = {
-            'ndims':    self.ndims,
-            'nvars':    self.nvars,
-            'srcex':    self._src_exprs,
-            'c'    :    self.cfg.items_as('constants', float)
+            'ndims' :    self.ndims,
+            'nvars' :    self.nvars,
+            'srcex' :    self._src_exprs,
+            'c'     :    self.cfg.items_as('constants', float)
         }
 
 
@@ -77,7 +99,7 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
              dims=[self.nupts, self.neles], smats=self.smat_at('upts'),
              rcpdjac=self.rcpdjac_at('upts'), gradu=self._vect_upts,
              u=self.scal_upts_inb, ku_src=self.ku_src, wu_src=self.wu_src,
-             ploc=self.ploc_at('upts'), F1=self.F1
+             ploc=self.ploc_at('upts'), F1=self.F1, fk=self.fk
         )
 
         # ----- NEGDIVCONF KERNELS -----
@@ -119,4 +141,8 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
         cmap = (eidx,)*nfp
 
         return (self.F1.mid,)*nfp, rmap, cmap
+
+    def get_fk_fpts_for_inter(self, eidx, fidx):
+        nfp = self.nfacefpts[fidx]
+        return (self.fk.mid,)*nfp, (0,)*nfp, (eidx,)*nfp
 

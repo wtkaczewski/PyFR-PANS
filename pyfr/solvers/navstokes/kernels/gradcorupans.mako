@@ -11,8 +11,8 @@
               wu_src='inout fpdtype_t'
               t = 'scalar fpdtype_t'
               ploc = 'in fpdtype_t[${str(ndims)}]'
-              F1='inout fpdtype_t'>
-
+              F1='inout fpdtype_t'
+              fk='in fpdtype_t'>
 
 fpdtype_t tmpgradu[${ndims}];
 
@@ -83,25 +83,28 @@ fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 	% else:
 		Tjk = mu_t*(2*Sjk);
 	% endif
-	prod += duj_dxk*Tjk; // CHECK THESIS?
+	prod += duj_dxk*Tjk; 
 % endfor
 
 
-// Multiplying by sig_w2u instead of dividing so fw/fk not fk/fw
-fpdtype_t sig_w2u = ${c['sig_w2']}*${c['fw']/c['fk']};
+
+fpdtype_t fk_temp = max(${c['min_fk']}, min(fk,1.0));
+fpdtype_t fw = 1.0/fk_temp; // Assume fw = 1/fk
+
+fpdtype_t sig_w2u = ${c['sig_w2']}*fw/fk_temp;
 
 // Production limiter (Menter, F. R., AIAA Paper 93-2906, July 1993)
 //prod = min(prod, 20*${c['betastar']}*rho*wu*ku_temp);
 
 // Convert to unresolved production
-fpdtype_t prod_u = ${c['fk']}*prod + ${c['betastar']}*ku_temp*wu*(1.0 - 1.0/${c['fw']});
+fpdtype_t prod_u = fk_temp*prod + ${c['betastar']}*ku_temp*wu*(1.0 - 1.0/fw);
 
 // Calculate damping term CDkw
 fpdtype_t CDkw = max(2*rho*sig_w2u*dkdw_dxi/wu, pow(10.0,-10));
 
 // d = sqrt(x**2 + y**2) - 0.5 for cylinder of diameter 1
-//fpdtype_t d = pow(pow(ploc[0], 2) + pow(ploc[1], 2), 0.5) - 0.5; // Cylinder
-fpdtype_t d = min(pow(pow(ploc[0], 2) + pow(ploc[1], 2), 0.5) - 0.5, pow(pow(ploc[0]-10, 2) + pow(ploc[1], 2), 0.5) - 0.5); // Tandem spheres
+fpdtype_t d = pow(pow(ploc[0], 2) + pow(ploc[1], 2), 0.5) - 0.5; // Cylinder
+//fpdtype_t d = min(pow(pow(ploc[0], 2) + pow(ploc[1], 2), 0.5) - 0.5, pow(pow(ploc[0]-10, 2) + pow(ploc[1], 2), 0.5) - 0.5); // Tandem spheres
 
 // Calculate blending term F1
 fpdtype_t g1 = max(pow(ku_temp, 0.5)/(${c['betastar']}*wu*d), 500*${c['mu']}/(d*d*rho*wu));
@@ -112,7 +115,7 @@ F1 = tanh(g3);
 // Calculate blended constants
 fpdtype_t alpha = F1*${c['alpha1']} + (1 - F1)*${c['alpha2']};
 fpdtype_t beta  = F1*${c['beta1']}  + (1 - F1)*${c['beta2']};
-fpdtype_t betaprime = alpha*${c['betastar']} - alpha*${c['betastar']}/${c['fw']} + beta/${c['fw']};
+fpdtype_t betaprime = alpha*${c['betastar']} - alpha*${c['betastar']}/fw + beta/fw;
 
 
 

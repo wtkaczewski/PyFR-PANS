@@ -3,7 +3,7 @@
 <%namespace module='pyfr.backends.base.makoutil' name='pyfr'/>
 
 % if ndims == 2:
-<%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout, t, F1'>
+<%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout, t, F1, fk'>
     fpdtype_t rho = uin[0], rhou = uin[1], rhov = uin[2], E = uin[3];
 
     fpdtype_t rcprho = 1.0/rho;
@@ -59,8 +59,10 @@
     fpdtype_t ku_x = grad_uin[0][4];    fpdtype_t ku_y = grad_uin[1][4];
     fpdtype_t wu_x = grad_uin[0][5];    fpdtype_t wu_y = grad_uin[1][5];
 
-    fpdtype_t sig_ku = ${c['fw']/c['fk']}*(F1*${c['sig_k1']} + (1-F1)*${c['sig_k2']});
-    fpdtype_t sig_wu = ${c['fw']/c['fk']}*(F1*${c['sig_w1']} + (1-F1)*${c['sig_w2']});
+    fpdtype_t fk_temp = max(${c['min_fk']}, fk);
+    fpdtype_t fw = 1.0/fk_temp;
+    fpdtype_t sig_ku = (fw/fk_temp)*(F1*${c['sig_k1']} + (1-F1)*${c['sig_k2']});
+    fpdtype_t sig_wu = (fw/fk_temp)*(F1*${c['sig_w1']} + (1-F1)*${c['sig_w2']});
 
     fout[0][4] += -rcprho*(mu_c + sig_ku*mu_t)*ku_x;     fout[1][4] += -rcprho*(mu_c + sig_ku*mu_t)*ku_y; 
     fout[0][5] += -rcprho*(mu_c + sig_wu*mu_t)*wu_x;     fout[1][5] += -rcprho*(mu_c + sig_wu*mu_t)*wu_y; 
@@ -69,7 +71,7 @@
 
 </%pyfr:macro>
 % elif ndims == 3:
-<%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout, t, F1'>
+<%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout, t, F1, fk'>
     fpdtype_t rho  = uin[0];
     fpdtype_t rhou = uin[1], rhov = uin[2], rhow = uin[3];
     fpdtype_t E    = uin[4];
@@ -139,8 +141,10 @@
     fpdtype_t ku_x = grad_uin[0][5];    fpdtype_t ku_y = grad_uin[1][5];    fpdtype_t ku_z = grad_uin[2][5];
     fpdtype_t wu_x = grad_uin[0][6];    fpdtype_t wu_y = grad_uin[1][6];    fpdtype_t wu_z = grad_uin[2][6];
 
-    fpdtype_t sig_ku = ${c['fw']/c['fk']}*(F1*${c['sig_k1']} + (1-F1)*${c['sig_k2']});
-    fpdtype_t sig_wu = ${c['fw']/c['fk']}*(F1*${c['sig_w1']} + (1-F1)*${c['sig_w2']});
+    fpdtype_t fk_temp = max(${c['min_fk']}, fk);
+    fpdtype_t fw = 1.0/fk_temp;
+    fpdtype_t sig_ku = (fw/fk_temp)*(F1*${c['sig_k1']} + (1-F1)*${c['sig_k2']});
+    fpdtype_t sig_wu = (fw/fk_temp)*(F1*${c['sig_w1']} + (1-F1)*${c['sig_w2']});
 
     fout[0][5] += -rcprho*(mu_c + sig_ku*mu_t)*ku_x;     fout[1][5] += -rcprho*(mu_c + sig_ku*mu_t)*ku_y;     fout[2][5] += -rcprho*(mu_c + sig_ku*mu_t)*ku_z; 
     fout[0][6] += -rcprho*(mu_c + sig_wu*mu_t)*wu_x;     fout[1][6] += -rcprho*(mu_c + sig_wu*mu_t)*wu_y;     fout[2][6] += -rcprho*(mu_c + sig_wu*mu_t)*wu_z; 
