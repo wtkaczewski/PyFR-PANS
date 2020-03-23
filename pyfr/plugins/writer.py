@@ -76,8 +76,8 @@ class WriterPlugin(BasePlugin):
             f1 = intg.system.ele_map[elekeys[i]].F1._get()
             fk = intg.system.ele_map[elekeys[i]].fk._get()
             fk = self.expandVarAcrossElem(fk, np.shape(f1))
-            out.append(f1)
-            out.append(fk)
+            out.append(self.copyStructure(f1, soln[0]))
+            out.append(self.copyStructure(fk, soln[0]))
             out = np.moveaxis(np.array(out),0,1)
             outsoln.append(out)
         return np.array(outsoln)
@@ -88,3 +88,13 @@ class WriterPlugin(BasePlugin):
         for i in range(targetshape[0]):
             out[i][:] = var
         return out
+
+    def copyStructure(self, var, target):
+        if np.shape(var) != np.shape(target):
+            print('Varying shapes.', np.shape(var), np.shape(target))
+        else:
+            out = target*0
+            for i in range(np.shape(var)[0]):
+                for j in range(np.shape(var)[1]):
+                        out[i][j] = var[i][j]
+            return out
