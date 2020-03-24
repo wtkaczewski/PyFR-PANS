@@ -38,7 +38,7 @@ dx_max = dx_max/(${order + 1}); // Divide by order+1 to account for increased re
 fpdtype_t l_min = pow(((pow(${c['mu']}/rho, 3))/(${c['betastar']}*k_res*wu)), 0.25);
 
 // Calculate variable fk and assume fw = 1/fk
-fk = min(1.0, max(${c['min_fk']}, tanh(${c['C_PANS']}*pow(dx_max/l_min, 4)));
+fk = min(1.0, max(${c['min_fk']}, tanh(${c['C_PANS']}*pow(dx_max/l_min, 4))));
 
 </%pyfr:kernel>
 
