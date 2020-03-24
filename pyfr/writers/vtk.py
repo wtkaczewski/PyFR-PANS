@@ -18,8 +18,8 @@ class VTKWriter(BaseWriter):
 
     def __init__(self, args):
         super().__init__(args)     
-        self.privarmap = self.elementscls.privarmap[self.ndims] + ['F1', 'fk']
-        self.visvarmap = self.elementscls.visvarmap[self.ndims] + [('F1', ['F1']), ('fk', ['fk'])]
+        self.privarmap = self.elementscls.privarmap[self.ndims] 
+        self.visvarmap = self.elementscls.visvarmap[self.ndims] 
 
         self.dtype = np.dtype(args.precision).type
         self.divisor = args.divisor or self.cfg.getint('solver', 'order')
@@ -61,16 +61,26 @@ class VTKWriter(BaseWriter):
 
     def _pre_proc_fields_soln(self, name, mesh, soln):
         # Convert from conservative to primitive variables
-        return np.array(self.elementscls.con_to_pri(soln, self.cfg, addvars=True))
+        nvars, _, _ = np.shape(soln)
+        auxvars = nvars == 2
+        return np.array(self.elementscls.con_to_pri(soln, self.cfg, auxvars=auxvars))
 
     def _pre_proc_fields_scal(self, name, mesh, soln):
         return soln
 
     def _post_proc_fields_soln(self, vsoln):
+        nvars, _, _ = np.shape(vsoln)
+        auxvars = nvars == 2
+        if auxvars:
+        	privarmap = ['F1', 'fk']
+        	visvarmap = [('F1', ['F1']), ('fk', ['fk'])]
+       	else:
+       		visvarmap = self.visvarmap
+       		privarmap = self.privarmap
         # Prepare the fields
         fields = []
-        for fnames, vnames in self.visvarmap:
-            ix = [self.privarmap.index(vn) for vn in vnames]
+        for fnames, vnames in visvarmap:
+            ix = [privarmap.index(vn) for vn in vnames]
 
             fields.append(vsoln[ix])
 
@@ -136,11 +146,13 @@ class VTKWriter(BaseWriter):
 
         return npts, ncells, nnodes
 
-    def _get_array_attrs(self, mk=None):
+    def _get_array_attrs(self, mk=None, auxvars=False):
         dtype = 'Float32' if self.dtype == np.float32 else 'Float64'
         dsize = np.dtype(self.dtype).itemsize
 
         vvars = self._vtk_vars
+        if auxvars:
+        	vvars = [('F1', ['F1']),('fk', ['fk'])]
 
         names = ['', 'connectivity', 'offsets', 'types']
         types = [dtype, 'Int32', 'Int32', 'UInt8']
@@ -207,7 +219,7 @@ class VTKWriter(BaseWriter):
 
                 # Header
                 for mk, sk in misil:
-                    off = self._write_serial_header(fh, mk, off)
+                    off = self._write_serial_header(fh, mk, sk, off)
 
                 write_s_to_fh('</UnstructuredGrid>\n'
                               '<AppendedData encoding="raw">\n_')
@@ -244,8 +256,10 @@ class VTKWriter(BaseWriter):
     def _process_name(self, name):
         return re.sub(r'\W+', '_', name)
 
-    def _write_serial_header(self, vtuf, mk, off):
-        names, types, comps, sizes = self._get_array_attrs(mk)
+    def _write_serial_header(self, vtuf, mk, sk, off):
+        auxvars = 'aux' in sk
+
+        names, types, comps, sizes = self._get_array_attrs(mk=mk,auxvars=auxvars)
         npts, ncells = self._get_npts_ncells_nnodes(mk)[:2]
 
         write_s = lambda s: vtuf.write(s.encode('utf-8'))

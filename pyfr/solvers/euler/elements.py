@@ -29,20 +29,10 @@ class BaseFluidElements(object):
 
 
     @staticmethod
-    def pri_to_con(pris, cfg, addvars=False):
-        if addvars:
-            rho, p = pris[0], pris[-5]
-            ku, wu = pris[-4], pris[-3]
-            F1, fk = pris[-2], pris[-1]
-
-            # Multiply velocity components by rho
-            rhovs = [rho*c for c in pris[1:-5]]
-
-            # Compute the energy
-            gamma = cfg.getfloat('constants', 'gamma')
-            E = p/(gamma - 1) + 0.5*rho*sum(c*c for c in pris[1:-5])
-
-            return [rho] + rhovs + [E] + [ku,wu] + [F1, fk]
+    def pri_to_con(pris, cfg, auxvars=False):
+        if auxvars:
+            F1, fk = pris[0], pris[1]
+            return [F1, fk]
         else:
             rho, p = pris[0], pris[-3]
             ku, wu = pris[-2], pris[-1]
@@ -56,17 +46,10 @@ class BaseFluidElements(object):
 
             return [rho] + rhovs + [E] + [ku,wu]
     @staticmethod
-    def con_to_pri(cons, cfg, addvars=False):
-        if addvars:
-            rho, E = cons[0],  cons[-5]
-            ku, wu = cons[-4], cons[-3]
-            F1, fk = cons[-2], cons[-1]
-            # Divide momentum components by rho
-            vs = [rhov/rho for rhov in cons[1:-5]]
-            # Compute the pressure
-            gamma = cfg.getfloat('constants', 'gamma')
-            p = (gamma - 1)*(E - 0.5*rho*sum(v*v for v in vs))
-            return [rho] + vs + [p] + [ku,wu] + [F1, fk]
+    def con_to_pri(cons, cfg, auxvars=False):
+        if auxvars:
+            F1, fk = cons[0], cons[1]
+            return [F1, fk]
         else:
             rho, E = cons[0],  cons[-3]
             ku, wu = cons[-2], cons[-1]

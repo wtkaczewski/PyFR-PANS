@@ -35,7 +35,7 @@ class NativeWriter(object):
 
         # Get the type and shape of each element in the partition
         etypes = intg.system.ele_types
-        shapes = [(nupts, nvars+2, neles)
+        shapes = [(nupts, nvars, neles)
                   for nupts, _, neles in intg.system.ele_shapes]
 
         # Gather
@@ -86,7 +86,9 @@ class NativeWriter(object):
     def write(self, data, metadata, tcurr):
         # Determine the output path
         path = self._get_output_path(tcurr)
-
+        if self.prefix == 'aux':
+        	path = path.split('.pyfrs')[0] + 'aux.pyfrs'
+        	
         # Delegate to _write to do the actual outputting
         self._write(path, data, metadata)
 
