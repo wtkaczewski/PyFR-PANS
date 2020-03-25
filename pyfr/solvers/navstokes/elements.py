@@ -88,11 +88,13 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
             'ndims' :    self.ndims,
             'nvars' :    self.nvars,
             'srcex' :    self._src_exprs,
-            'c'     :    self.cfg.items_as('constants', float)
+            'c'     :    self.cfg.items_as('constants', float),
+            'geo'   :    self.cfg.get('solver', 'geometry')
         }
 
 
         # ----- GRADCORU KERNELS -----
+
         
         self.kernels['gradcoru_upts'] = lambda: backend.kernel(
             'gradcorupans', tplargs=srctplargs,

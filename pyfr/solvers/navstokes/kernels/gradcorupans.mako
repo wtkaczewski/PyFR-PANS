@@ -103,8 +103,19 @@ fpdtype_t prod_u = fk_temp*prod + ${c['betastar']}*ku_temp*wu*(1.0 - 1.0/fw);
 fpdtype_t CDkw = max(2*rho*sig_w2u*dkdw_dxi/wu, pow(10.0,-10));
 
 // d = sqrt(x**2 + y**2) - 0.5 for cylinder of diameter 1
-fpdtype_t d = pow(pow(ploc[0], 2) + pow(ploc[1], 2), 0.5) - 0.5; // Cylinder
-//fpdtype_t d = min(pow(pow(ploc[0], 2) + pow(ploc[1], 2), 0.5) - 0.5, pow(pow(ploc[0]-10, 2) + pow(ploc[1], 2), 0.5) - 0.5); // Tandem spheres
+fpdtype_t d;
+% if geo == 'cylinder':
+	d = pow(pow(ploc[0], 2) + pow(ploc[1], 2), 0.5) - 0.5; // Cylinder
+% elif geo == 'tandsphere':
+	d = min(pow(pow(ploc[0], 2) + pow(ploc[1], 2), 0.5) - 0.5, pow(pow(ploc[0]-10, 2) + pow(ploc[1], 2), 0.5) - 0.5); // Tandem spheres
+% elif geo == 'bfstep':
+	if (ploc[0] > 0.0 && ploc[0] < 1.0 && ploc[1] > 1.0){
+		d = pow(pow(ploc[0], 2) + pow(ploc[1]-1, 2), 0.5);
+	}
+	else {
+		d = (ploc[0] <= 0.0) ? ploc[1] - 1.0 : ploc[1];
+	}
+% endif
 
 // Calculate blending term F1
 fpdtype_t g1 = max(pow(ku_temp, 0.5)/(${c['betastar']}*wu*d), 500*${c['mu']}/(d*d*rho*wu));
