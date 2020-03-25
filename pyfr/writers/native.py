@@ -86,9 +86,7 @@ class NativeWriter(object):
     def write(self, data, metadata, tcurr):
         # Determine the output path
         path = self._get_output_path(tcurr)
-        if self.prefix == 'aux':
-        	path = path.split('.pyfrs')[0] + 'aux.pyfrs'
-        	
+
         # Delegate to _write to do the actual outputting
         self._write(path, data, metadata)
 

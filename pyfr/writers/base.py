@@ -29,10 +29,7 @@ class BaseWriter(object):
 
         # Get element types and array shapes
         self.mesh_inf = self.mesh.array_info('spt')
-        try:
-        	self.soln_inf = self.soln.array_info(self.dataprefix)
-        except:
-        	self.soln_inf = self.soln.array_info('aux')
+        self.soln_inf = self.soln.array_info(self.dataprefix)
 
         # Dimensions
         self.ndims = next(iter(self.mesh_inf.values()))[1][2]
