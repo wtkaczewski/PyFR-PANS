@@ -2,7 +2,6 @@
 
 from pyfr.solvers.baseadvecdiff import BaseAdvectionDiffusionElements
 from pyfr.solvers.euler.elements import BaseFluidElements
-import numpy as np
 
 
 class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
@@ -44,7 +43,7 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
         self.ku_src = self._be.matrix((self.nupts, self.neles), tags={'align'})
         self.wu_src = self._be.matrix((self.nupts, self.neles), tags={'align'})
         self.F1     = self._be.matrix((self.nupts, self.neles), tags={'align'}, extent= nonce + 'F1')
-        self.mu_t   = self._be.matrix((self.nupts, self.neles), tags={'align'}, extent= nonce + 'mu_t', initval = (1e-9)*np.ones((self.nupts, self.neles)))
+        self.mu_t   = self._be.matrix((self.nupts, self.neles), tags={'align'}, extent= nonce + 'mu_t')
 
         if 'flux' in self.antialias:
             self.kernels['tdisf'] = lambda: backend.kernel(
