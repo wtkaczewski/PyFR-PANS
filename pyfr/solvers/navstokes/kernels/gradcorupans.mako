@@ -88,7 +88,7 @@ fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 
 
 
-fpdtype_t fk_temp = max(${c['min_fk']}, min(fk,1.0));
+fpdtype_t fk_temp = min(${c['max_fk']}, max(${c['min_fk']}, fk));;
 fpdtype_t fw = 1.0/fk_temp; // Assume fw = 1/fk
 
 fpdtype_t sig_w2u = ${c['sig_w2']}*fw/fk_temp;
