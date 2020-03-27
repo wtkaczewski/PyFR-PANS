@@ -31,6 +31,8 @@
 	    fpdtype_t mu_c = ${c['mu']};
 	% endif
 
+	fpdtype_t mu_t_eff = max(mu_t, pow(10, -9));
+
     // Turbulence model variables and turbulent viscosity
     fpdtype_t ku = (uin[4] > ${c['min_ku']}) ? uin[4] : ${c['min_ku']};
     fpdtype_t wu = exp(uin[5]);
@@ -40,15 +42,15 @@
     fpdtype_t T_y = rcprho*(E_y - (rcprho*rho_y*E + u*u_y + v*v_y));
 
     // Negated stress tensor elements
-    fpdtype_t t_xx = -2*(mu_c + mu_t)*rcprho*(u_x - ${1.0/3.0}*(u_x + v_y));
-    fpdtype_t t_yy = -2*(mu_c + mu_t)*rcprho*(v_y - ${1.0/3.0}*(u_x + v_y));
-    fpdtype_t t_xy = -(mu_c + mu_t)*rcprho*(v_x + u_y);
+    fpdtype_t t_xx = -2*(mu_c + mu_t_eff)*rcprho*(u_x - ${1.0/3.0}*(u_x + v_y));
+    fpdtype_t t_yy = -2*(mu_c + mu_t_eff)*rcprho*(v_y - ${1.0/3.0}*(u_x + v_y));
+    fpdtype_t t_xy = -(mu_c + mu_t_eff)*rcprho*(v_x + u_y);
 
     fout[0][1] += t_xx;     fout[1][1] += t_xy;
     fout[0][2] += t_xy;     fout[1][2] += t_yy;
 
-    fout[0][3] += u*t_xx + v*t_xy + -(mu_c*${c['gamma']/c['Pr']} + mu_t*${c['gamma']/c['Pr_t']})*T_x;
-    fout[1][3] += u*t_xy + v*t_yy + -(mu_c*${c['gamma']/c['Pr']} + mu_t*${c['gamma']/c['Pr_t']})*T_y;
+    fout[0][3] += u*t_xx + v*t_xy + -(mu_c*${c['gamma']/c['Pr']} + mu_t_eff*${c['gamma']/c['Pr_t']})*T_x;
+    fout[1][3] += u*t_xy + v*t_yy + -(mu_c*${c['gamma']/c['Pr']} + mu_t_eff*${c['gamma']/c['Pr_t']})*T_y;
 
     // Turbulence model gradients 
     fpdtype_t ku_x = grad_uin[0][4];    fpdtype_t ku_y = grad_uin[1][4];
@@ -57,8 +59,8 @@
     fpdtype_t sig_ku = ${c['fw']/c['fk']}*(F1*${c['sig_k1']} + (1-F1)*${c['sig_k2']});
     fpdtype_t sig_wu = ${c['fw']/c['fk']}*(F1*${c['sig_w1']} + (1-F1)*${c['sig_w2']});
 
-    fout[0][4] += -rcprho*(mu_c + sig_ku*mu_t)*ku_x;     fout[1][4] += -rcprho*(mu_c + sig_ku*mu_t)*ku_y; 
-    fout[0][5] += -rcprho*(mu_c + sig_wu*mu_t)*wu_x;     fout[1][5] += -rcprho*(mu_c + sig_wu*mu_t)*wu_y; 
+    fout[0][4] += -rcprho*(mu_c + sig_ku*mu_t_eff)*ku_x;     fout[1][4] += -rcprho*(mu_c + sig_ku*mu_t_eff)*ku_y; 
+    fout[0][5] += -rcprho*(mu_c + sig_wu*mu_t_eff)*wu_x;     fout[1][5] += -rcprho*(mu_c + sig_wu*mu_t_eff)*wu_y; 
 
 
 
@@ -101,26 +103,28 @@
 	    fpdtype_t mu_c = ${c['mu']};
 	% endif
 
+	fpdtype_t mu_t_eff = max(mu_t, pow(10.0, -9.0));
+
     // Compute temperature derivatives (c_v*dT/d[x,y,z])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x + w*w_x));
     fpdtype_t T_y = rcprho*(E_y - (rcprho*rho_y*E + u*u_y + v*v_y + w*w_y));
     fpdtype_t T_z = rcprho*(E_z - (rcprho*rho_z*E + u*u_z + v*v_z + w*w_z));
 
     // Negated stress tensor elements
-    fpdtype_t t_xx = -2*(mu_c + mu_t)*rcprho*(u_x - ${1.0/3.0}*(u_x + v_y + w_z));
-    fpdtype_t t_yy = -2*(mu_c + mu_t)*rcprho*(v_y - ${1.0/3.0}*(u_x + v_y + w_z));
-    fpdtype_t t_zz = -2*(mu_c + mu_t)*rcprho*(w_z - ${1.0/3.0}*(u_x + v_y + w_z));
-    fpdtype_t t_xy = -(mu_c + mu_t)*rcprho*(v_x + u_y);
-    fpdtype_t t_xz = -(mu_c + mu_t)*rcprho*(u_z + w_x);
-    fpdtype_t t_yz = -(mu_c + mu_t)*rcprho*(w_y + v_z);
+    fpdtype_t t_xx = -2*(mu_c + mu_t_eff)*rcprho*(u_x - ${1.0/3.0}*(u_x + v_y + w_z));
+    fpdtype_t t_yy = -2*(mu_c + mu_t_eff)*rcprho*(v_y - ${1.0/3.0}*(u_x + v_y + w_z));
+    fpdtype_t t_zz = -2*(mu_c + mu_t_eff)*rcprho*(w_z - ${1.0/3.0}*(u_x + v_y + w_z));
+    fpdtype_t t_xy = -(mu_c + mu_t_eff)*rcprho*(v_x + u_y);
+    fpdtype_t t_xz = -(mu_c + mu_t_eff)*rcprho*(u_z + w_x);
+    fpdtype_t t_yz = -(mu_c + mu_t_eff)*rcprho*(w_y + v_z);
 
     fout[0][1] += t_xx;     fout[1][1] += t_xy;     fout[2][1] += t_xz;
     fout[0][2] += t_xy;     fout[1][2] += t_yy;     fout[2][2] += t_yz;
     fout[0][3] += t_xz;     fout[1][3] += t_yz;     fout[2][3] += t_zz;
 
-    fout[0][4] += u*t_xx + v*t_xy + w*t_xz + -(mu_c*${c['gamma']/c['Pr']} + mu_t*${c['gamma']/c['Pr_t']})*T_x;
-    fout[1][4] += u*t_xy + v*t_yy + w*t_yz + -(mu_c*${c['gamma']/c['Pr']} + mu_t*${c['gamma']/c['Pr_t']})*T_y;
-    fout[2][4] += u*t_xz + v*t_yz + w*t_zz + -(mu_c*${c['gamma']/c['Pr']} + mu_t*${c['gamma']/c['Pr_t']})*T_z;
+    fout[0][4] += u*t_xx + v*t_xy + w*t_xz + -(mu_c*${c['gamma']/c['Pr']} + mu_t_eff*${c['gamma']/c['Pr_t']})*T_x;
+    fout[1][4] += u*t_xy + v*t_yy + w*t_yz + -(mu_c*${c['gamma']/c['Pr']} + mu_t_eff*${c['gamma']/c['Pr_t']})*T_y;
+    fout[2][4] += u*t_xz + v*t_yz + w*t_zz + -(mu_c*${c['gamma']/c['Pr']} + mu_t_eff*${c['gamma']/c['Pr_t']})*T_z;
 
     // Turbulence model gradients 
     fpdtype_t ku_x = grad_uin[0][5];    fpdtype_t ku_y = grad_uin[1][5];    fpdtype_t ku_z = grad_uin[2][5];
@@ -129,8 +133,8 @@
     fpdtype_t sig_ku = ${c['fw']/c['fk']}*(F1*${c['sig_k1']} + (1-F1)*${c['sig_k2']});
     fpdtype_t sig_wu = ${c['fw']/c['fk']}*(F1*${c['sig_w1']} + (1-F1)*${c['sig_w2']});
 
-    fout[0][5] += -rcprho*(mu_c + sig_ku*mu_t)*ku_x;     fout[1][5] += -rcprho*(mu_c + sig_ku*mu_t)*ku_y;     fout[2][5] += -rcprho*(mu_c + sig_ku*mu_t)*ku_z; 
-    fout[0][6] += -rcprho*(mu_c + sig_wu*mu_t)*wu_x;     fout[1][6] += -rcprho*(mu_c + sig_wu*mu_t)*wu_y;     fout[2][6] += -rcprho*(mu_c + sig_wu*mu_t)*wu_z; 
+    fout[0][5] += -rcprho*(mu_c + sig_ku*mu_t_eff)*ku_x;     fout[1][5] += -rcprho*(mu_c + sig_ku*mu_t_eff)*ku_y;     fout[2][5] += -rcprho*(mu_c + sig_ku*mu_t_eff)*ku_z; 
+    fout[0][6] += -rcprho*(mu_c + sig_wu*mu_t_eff)*wu_x;     fout[1][6] += -rcprho*(mu_c + sig_wu*mu_t_eff)*wu_y;     fout[2][6] += -rcprho*(mu_c + sig_wu*mu_t_eff)*wu_z; 
 
 </%pyfr:macro>
 % endif
