@@ -26,7 +26,6 @@ class NavierStokesIntInters(BaseAdvectionDiffusionIntInters):
 
 
         self.F1 = self._view(lhs, 'get_F1_fpts_for_inter') 
-        self.mu_t = self._view(lhs, 'get_mu_t_fpts_for_inter') 
 
         if abs(self._tpl_c['ldg-beta']) == 0.5:
             self.kernels['copy_fpts'] = lambda: ComputeMetaKernel(
@@ -44,7 +43,7 @@ class NavierStokesIntInters(BaseAdvectionDiffusionIntInters):
             gradul=self._vect_lhs, gradur=self._vect_rhs,
             artviscl=self._artvisc_lhs, artviscr=self._artvisc_rhs,
             magnl=self._mag_pnorm_lhs, nl=self._norm_pnorm_lhs,
-            F1=self.F1, mu_t=self.mu_t
+            F1=self.F1
         )
 
 
@@ -64,7 +63,6 @@ class NavierStokesMPIInters(BaseAdvectionDiffusionMPIInters):
         be.pointwise.register('pyfr.solvers.navstokes.kernels.mpicflux')
 
         self.F1 = self._xchg_view(lhs, 'get_F1_fpts_for_inter') 
-        self.mu_t = self._xchg_view(lhs, 'get_mu_t_fpts_for_inter') 
 
         self.kernels['con_u'] = lambda: be.kernel(
             'mpiconu', tplargs=tplargs, dims=[self.ninterfpts],
@@ -76,7 +74,7 @@ class NavierStokesMPIInters(BaseAdvectionDiffusionMPIInters):
             gradul=self._vect_lhs, gradur=self._vect_rhs,
             artviscl=self._artvisc_lhs, artviscr=self._artvisc_rhs,
             magnl=self._mag_pnorm_lhs, nl=self._norm_pnorm_lhs,
-            F1=self.F1, mu_t=self.mu_t
+            F1=self.F1
         )
 
 
@@ -99,7 +97,6 @@ class NavierStokesBaseBCInters(BaseAdvectionDiffusionBCInters):
         be.pointwise.register('pyfr.solvers.navstokes.kernels.bccflux')
 
         self.F1 = self._view(lhs, 'get_F1_fpts_for_inter') 
-        self.mu_t = self._view(lhs, 'get_mu_t_fpts_for_inter') 
 
         self.kernels['con_u'] = lambda: be.kernel(
             'bcconu', tplargs=tplargs, dims=[self.ninterfpts],
@@ -111,7 +108,7 @@ class NavierStokesBaseBCInters(BaseAdvectionDiffusionBCInters):
             ul=self._scal_lhs, gradul=self._vect_lhs,
             magnl=self._mag_pnorm_lhs, nl=self._norm_pnorm_lhs,
             ploc=self._ploc, artviscl=self._artvisc_lhs,
-            F1=self.F1, mu_t=self.mu_t
+            F1=self.F1
         )
 
 

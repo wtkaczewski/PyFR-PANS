@@ -3,7 +3,7 @@
 <%namespace module='pyfr.backends.base.makoutil' name='pyfr'/>
 
 % if ndims == 2:
-<%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout, t, F1, mu_t'>
+<%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout, t, F1'>
     fpdtype_t rho = uin[0], rhou = uin[1], rhov = uin[2], E = uin[3];
 
     fpdtype_t rcprho = 1.0/rho;
@@ -21,19 +21,24 @@
     fpdtype_t E_x = grad_uin[0][3];
     fpdtype_t E_y = grad_uin[1][3];
 
-	% if visc_corr == 'sutherland':
-	    // Compute the temperature and viscosity
-	    fpdtype_t cpT = ${c['gamma']}*(rcprho*E - 0.5*(u*u + v*v));
-	    fpdtype_t Trat = ${1/c['cpTref']}*cpT;
-	    fpdtype_t mu_c = ${c['mu']*(c['cpTref'] + c['cpTs'])}*Trat*sqrt(Trat)
-	                   / (cpT + ${c['cpTs']});
-	% else:
-	    fpdtype_t mu_c = ${c['mu']};
-	% endif
+% if visc_corr == 'sutherland':
+    // Compute the temperature and viscosity
+    fpdtype_t cpT = ${c['gamma']}*(rcprho*E - 0.5*(u*u + v*v));
+    fpdtype_t Trat = ${1/c['cpTref']}*cpT;
+    fpdtype_t mu_c = ${c['mu']*(c['cpTref'] + c['cpTs'])}*Trat*sqrt(Trat)
+                   / (cpT + ${c['cpTs']});
+% else:
+    fpdtype_t mu_c = ${c['mu']};
+% endif
 
     // Turbulence model variables and turbulent viscosity
     fpdtype_t ku = (uin[4] > ${c['min_ku']}) ? uin[4] : ${c['min_ku']};
+    //fpdtype_t wu = (uin[5] > ${c['min_wu']}) ? uin[5] : ${c['min_wu']};
     fpdtype_t wu = exp(uin[5]);
+
+	fpdtype_t mu_t = (rho*ku/wu < 0.0) ? 0.0 : rho*ku/wu;
+	mu_t = ${c['tmswitch']}*(1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
+	mu_t = (mu_t > ${c['mu']}*${c['max_mutrat']}) ? ${c['mu']}*${c['max_mutrat']} : mu_t;
 
     // Compute temperature derivatives (c_v*dT/d[x,y])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x));
@@ -64,7 +69,7 @@
 
 </%pyfr:macro>
 % elif ndims == 3:
-<%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout, t, F1, mu_t'>
+<%pyfr:macro name='viscous_flux_add' params='uin, grad_uin, fout, t, F1'>
     fpdtype_t rho  = uin[0];
     fpdtype_t rhou = uin[1], rhov = uin[2], rhow = uin[3];
     fpdtype_t E    = uin[4];
@@ -91,15 +96,23 @@
     fpdtype_t E_y = grad_uin[1][4];
     fpdtype_t E_z = grad_uin[2][4];
 
-	% if visc_corr == 'sutherland':
-	    // Compute the temperature and viscosity
-	    fpdtype_t cpT = ${c['gamma']}*(rcprho*E - 0.5*(u*u + v*v + w*w));
-	    fpdtype_t Trat = ${1/c['cpTref']}*cpT;
-	    fpdtype_t mu_c = ${c['mu']*(c['cpTref'] + c['cpTs'])}*Trat*sqrt(Trat)
-	                   / (cpT + ${c['cpTs']});
-	% else:
-	    fpdtype_t mu_c = ${c['mu']};
-	% endif
+% if visc_corr == 'sutherland':
+    // Compute the temperature and viscosity
+    fpdtype_t cpT = ${c['gamma']}*(rcprho*E - 0.5*(u*u + v*v + w*w));
+    fpdtype_t Trat = ${1/c['cpTref']}*cpT;
+    fpdtype_t mu_c = ${c['mu']*(c['cpTref'] + c['cpTs'])}*Trat*sqrt(Trat)
+                   / (cpT + ${c['cpTs']});
+% else:
+    fpdtype_t mu_c = ${c['mu']};
+% endif
+
+    fpdtype_t ku = (uin[5] > ${c['min_ku']}) ? uin[5] : ${c['min_ku']};
+    //fpdtype_t wu = (uin[5] > ${c['min_wu']}) ? uin[5] : ${c['min_wu']};
+    fpdtype_t wu = exp(uin[5]);
+
+	fpdtype_t mu_t = (rho*ku/wu < 0.0) ? 0.0 : rho*ku/wu;
+	mu_t = ${c['tmswitch']}*(1.0 - exp(-${c['tdvc']}*(t - ${c['tmstarttime']})))*mu_t;
+	mu_t = (mu_t > ${c['mu']}*${c['max_mutrat']}) ? ${c['mu']}*${c['max_mutrat']} : mu_t;
 
     // Compute temperature derivatives (c_v*dT/d[x,y,z])
     fpdtype_t T_x = rcprho*(E_x - (rcprho*rho_x*E + u*u_x + v*v_x + w*w_x));
