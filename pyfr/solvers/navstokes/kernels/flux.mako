@@ -59,7 +59,8 @@
     fpdtype_t ku_x = grad_uin[0][4];    fpdtype_t ku_y = grad_uin[1][4];
     fpdtype_t wu_x = grad_uin[0][5];    fpdtype_t wu_y = grad_uin[1][5];
 
-    fpdtype_t fk_temp = min(${c['max_fk']}, max(${c['min_fk']}, fk));
+    fpdtype_t fk_temp = (1 - F1)*fk; // Boundary layer shielding
+    fk_temp = min(${c['max_fk']}, max(${c['min_fk']}, fk_temp));
     fpdtype_t fw = 1.0/fk_temp;
     fpdtype_t sig_ku = (fw/fk_temp)*(F1*${c['sig_k1']} + (1-F1)*${c['sig_k2']});
     fpdtype_t sig_wu = (fw/fk_temp)*(F1*${c['sig_w1']} + (1-F1)*${c['sig_w2']});
@@ -141,7 +142,8 @@
     fpdtype_t ku_x = grad_uin[0][5];    fpdtype_t ku_y = grad_uin[1][5];    fpdtype_t ku_z = grad_uin[2][5];
     fpdtype_t wu_x = grad_uin[0][6];    fpdtype_t wu_y = grad_uin[1][6];    fpdtype_t wu_z = grad_uin[2][6];
 
-    fpdtype_t fk_temp = min(${c['max_fk']}, max(${c['min_fk']}, fk));
+    fpdtype_t fk_temp = (1 - F1)*fk; // Boundary layer shielding
+    fk_temp = min(${c['max_fk']}, max(${c['min_fk']}, fk_temp));
     fpdtype_t fw = 1.0/fk_temp;
     fpdtype_t sig_ku = (fw/fk_temp)*(F1*${c['sig_k1']} + (1-F1)*${c['sig_k2']});
     fpdtype_t sig_wu = (fw/fk_temp)*(F1*${c['sig_w1']} + (1-F1)*${c['sig_w2']});

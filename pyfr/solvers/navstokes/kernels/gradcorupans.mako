@@ -88,7 +88,8 @@ fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 
 
 
-fpdtype_t fk_temp = min(${c['max_fk']}, max(${c['min_fk']}, fk));;
+fpdtype_t fk_temp = (1 - F1)*fk; // Boundary layer shielding
+fk_temp = min(${c['max_fk']}, max(${c['min_fk']}, fk_temp));
 fpdtype_t fw = 1.0/fk_temp; // Assume fw = 1/fk
 
 fpdtype_t sig_w2u = ${c['sig_w2']}*fw/fk_temp;
@@ -100,7 +101,7 @@ fpdtype_t sig_w2u = ${c['sig_w2']}*fw/fk_temp;
 fpdtype_t prod_u = fk_temp*prod + ${c['betastar']}*ku_temp*wu*(1.0 - 1.0/fw);
 
 // Calculate damping term CDkw
-fpdtype_t CDkw = max(2*rho*sig_w2u*dkdw_dxi/wu, pow(10.0,-10));
+fpdtype_t CDkw = max(2*rho*${c['sig_w2']}*dkdw_dxi/wu, pow(10.0,-10));
 
 // d = sqrt(x**2 + y**2) - 0.5 for cylinder of diameter 1
 fpdtype_t d;
