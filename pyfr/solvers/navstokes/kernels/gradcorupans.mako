@@ -113,9 +113,9 @@ fpdtype_t d;
 		d = (ploc[0] <= 0.0) ? ploc[1] - 1.0 : ploc[1];
 	}
 % elif geo == 'cube':
-	fpdtype_t d1 = max(0, abs(ploc[0]) - 0.5);
-	fpdtype_t d2 = max(0, abs(ploc[1]) - 1.0);
-	fpdtype_t d3 = max(0, abs(ploc[2]) - 0.5);
+	fpdtype_t d1 = max(0.0, abs(ploc[0]) - 0.5);
+	fpdtype_t d2 = max(0.0, abs(ploc[1]) - 1.0);
+	fpdtype_t d3 = max(0.0, abs(ploc[2]) - 0.5);
 	d = pow(pow(d1,2) + pow(d2,2) + pow(d3,2), 0.5);
 	d = min(d, ploc[1]);
 % endif
