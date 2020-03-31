@@ -12,7 +12,7 @@
                      + 0.5*(1.0/ur[0])*${pyfr.dot('ur[{i}]', i=(1, ndims + 1))};
 
     ur[${nvars - 2}] = ${c['ku']};
-    ur[${nvars - 1}] = ul[${nvars - 1}];
+    ur[${nvars - 1}] = log(${c['wu']});
 </%pyfr:macro>
 
 <%pyfr:alias name='bc_ldg_state' func='bc_rsolve_state'/>
