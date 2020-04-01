@@ -122,6 +122,8 @@ fpdtype_t d;
 	fpdtype_t d3 = max(0.0, abs(ploc[2]) - 0.5);
 	d = pow(pow(d1,2) + pow(d2,2) + pow(d3,2), 0.5);
 	d = min(d, ploc[1]);
+% elif geo == 'TGV':
+	d = 1000000;
 % endif
 
 // Calculate blending term F1
