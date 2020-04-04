@@ -97,7 +97,7 @@ fpdtype_t sig_w2u = ${c['sig_w2']}*${c['fw']/c['fk']};
 fpdtype_t prod_u = ${c['fk']}*prod + ${c['betastar']}*ku_temp*wu*(1.0 - 1.0/${c['fw']});
 
 // Calculate damping term CDkw
-fpdtype_t CDkw = max(2*rho*${c['sig_w2']}*dkdw_dxi/wu, pow(10.0,-10));
+fpdtype_t CDkw = max(2*rho*sig_w2u*dkdw_dxi/wu, pow(10.0,-10));
 
 // Wall distance
 fpdtype_t d;
