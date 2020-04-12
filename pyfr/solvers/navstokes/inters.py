@@ -81,16 +81,16 @@ class NavierStokesMPIInters(BaseAdvectionDiffusionMPIInters):
 
         # Take fk and F1 from lhs
         # Do not need to send fk or F1 to rhs
-        self.kernels['F1_fpts_pack'] = null_comp_kern
-        self.kernels['fk_fpts_pack'] = null_comp_kern
-        self.kernels['F1_fpts_send'] = null_mpi_kern
-        self.kernels['fk_fpts_send'] = null_mpi_kern
+        #self.kernels['F1_fpts_pack'] = null_comp_kern
+        #self.kernels['fk_fpts_pack'] = null_comp_kern
+        #self.kernels['F1_fpts_send'] = null_mpi_kern
+        #self.kernels['fk_fpts_send'] = null_mpi_kern
 
         # Do not need to receive fk or F1 from rhs
-        self.kernels['F1_fpts_recv'] = null_mpi_kern
-        self.kernels['fk_fpts_recv'] = null_mpi_kern
-        self.kernels['F1_fpts_unpack'] = null_comp_kern
-        self.kernels['fk_fpts_unpack'] = null_comp_kern
+        #self.kernels['F1_fpts_recv'] = null_mpi_kern
+        #self.kernels['fk_fpts_recv'] = null_mpi_kern
+        #self.kernels['F1_fpts_unpack'] = null_comp_kern
+        #self.kernels['fk_fpts_unpack'] = null_comp_kern
 
 
 class NavierStokesBaseBCInters(BaseAdvectionDiffusionBCInters):
