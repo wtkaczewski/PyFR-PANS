@@ -87,8 +87,13 @@ fpdtype_t ku_temp = (ku < ${c['min_ku']}) ? ${c['min_ku']} : ku;
 % endfor
 
 
+fpdtype_t fk_temp;
+% if c['BLS'] > 0.5:
+	fk_temp = (1 - F1)*fk; // Boundary layer shielding
+% else:
+	fk_temp = fk;
+% endif
 
-fpdtype_t fk_temp = (1 - F1)*fk; // Boundary layer shielding
 fk_temp = min(${c['max_fk']}, max(${c['min_fk']}, fk_temp));
 fpdtype_t fw = 1.0/fk_temp; // Assume fw = 1/fk
 

@@ -57,10 +57,17 @@ class NavierStokesElements(BaseFluidElements, BaseAdvectionDiffusionElements):
             nvars=self.nvars, nupts=self.nupts, ndims=self.ndims,
             c=self.cfg.items_as('constants', float),
             order=self.basis.order, ubdegs=ubdegs,
-            invvdm=self.basis.ubasis.invvdm.T
+            invvdm=self.basis.ubasis.invvdm.T,
+            adpans=self.cfg.get('solver', 'adpans')
         )
 
+        adpans = self.cfg.get('solver', 'adpans')
+        if (adpans != 'dzanic' and adpans != 'girimaji' and adpans != 'hybrid'):
+        	raise ValueError('{0} is not a valid adaptive fk method.'.format(adpans))
         # Apply the sensor to estimate the required artificial viscosity
+        #adpansarg = 'adaptivefk' + adpans
+        #print(adpansarg)
+
         self.kernels['adaptivefk'] = lambda: backend.kernel(
             'adaptivefk', tplargs=tplargs, dims=[self.neles],
             u=self.scal_upts_inb, fk=self.fk,
