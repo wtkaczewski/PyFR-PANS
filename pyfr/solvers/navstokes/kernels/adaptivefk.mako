@@ -35,7 +35,7 @@ fpdtype_t ku = 0;
 
 
 // Calculate minimum turbulent length scale = (nu^3/epsilon)^(1/4) = (nu^3/(betastar*k*w))^(1/4)
-fpdtype_t dx_max = 1/pow(${c['elemvol']}*djac, 0.33); 
+fpdtype_t dx_max = pow(${c['elemvol']}*djac, 0.33); 
 dx_max = dx_max/(${order + 1}); // Divide by order+1 to account for increased resolving power at higher-order
 fpdtype_t l_min   = pow(((pow(${c['mu']}/rho, 3))/(${c['betastar']}*k_res*wu)), 0.25); // Dzanic method
 fpdtype_t l_kw    = pow(ku,0.5)/(${c['betastar']}*wu); // Girimaji method
@@ -49,7 +49,6 @@ fpdtype_t l_scale = 0;
 % elif adpans == 'hybrid':
 	l_scale = l_kwhyb;
 % endif
-
 
 // Calculate variable fk and assume fw = 1/fk
 fk = ${c['C_PANS']}*pow(dx_max/l_min, 2.0/3.0);
